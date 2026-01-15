@@ -1,0 +1,163 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Italiana&family=Mulish:wght@300;400;500;600&display=swap');
+
+:root {
+  /* Premium Color Palette */
+  --bg-color: #Fdfdfd;
+  --text-dark: #1a1a1a;
+  --text-muted: #666666;
+  --accent-color: #C5A059; /* More elegant gold */
+  --border-color: #eaeaea;
+  --card-bg: #ffffff;
+  
+  /* Spacing System */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 2rem;
+  --spacing-lg: 4rem;
+  --spacing-xl: 6rem;
+  --spacing-xxl: 8rem;
+
+  /* Typography */
+  --font-heading: 'Italiana', serif;
+  --font-body: 'Mulish', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-dark);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.3s;
+}
+
+a:hover {
+  opacity: 0.7;
+}
+
+/* Utility Classes for that "Premium" feel */
+.text-balance {
+  text-wrap: balance;
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.tracking-wide {
+  letter-spacing: 0.05em;
+}
+
+.tracking-wider {
+  letter-spacing: 0.1em;
+}
+
+.text-gold {
+  color: var(--accent-color);
+}
+
+.btn-premium {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--text-dark);
+  color: var(--text-dark);
+  padding: 14px 40px;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  cursor: pointer;
+  border-radius: 0; /* Sharp corners are more premium usually, or slightly rounded 2px */
+  text-decoration: none;
+}
+
+.btn-premium:hover {
+  background: var(--text-dark);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.section-padding {
+  padding: var(--spacing-xl) 0;
+}
+
+.img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Custom Card Styles */
+.product-card {
+  transition: transform 0.5s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+}
+
+.product-card img {
+  border-radius: 2px;
+  transition: opacity 0.3s ease;
+}
+
+.hover-zoom {
+  overflow: hidden;
+}
+
+.hover-zoom img {
+  transition: transform 0.8s ease;
+}
+
+.hover-zoom:hover img {
+  transform: scale(1.05);
+}
+
+/* Footer specific */
+.footer-link {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.footer-link:hover {
+  color: var(--text-dark);
+}
+
+/* Smooth fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 1.2s ease-out forwards;
+}
+
+/* Bootstrap Overrides if needed */
+.container {
+  max-width: 1200px; /* Tighter container for editorial feel */
+}
