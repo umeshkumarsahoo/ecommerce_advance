@@ -80,7 +80,7 @@ const Preloader = ({ onComplete }) => {
             <style>{`
         @keyframes pulse {
           0%, 100% { opacity: 0.3; transform: scaleX(0.5); }
-          50% { opacity: 1; transform: scaleX(1); }
+          50% { opacity: 3.4; transform: scaleX(1.5); }
         }
       `}</style>
         </div>
