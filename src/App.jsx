@@ -1,47 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import ScrollProvider from './components/ScrollProvider';
-import Preloader from './components/Preloader';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Story from './components/Story';
-import Journal from './components/Journal';
-import Showcase from './components/Showcase';
-import Collection from './components/Collection';
-import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
 
 /**
- * App Component - Main Application Shell
- * 
- * Manages:
- * - Preloader state
- * - Component composition
- * - Smooth scroll provider
+ * App Component - Main Application Router
  */
 function App() {
-  const [loaded, setLoaded] = useState(false);
-
   return (
-    <ScrollProvider>
-      <div className="App">
-
-        {/* Luxury Preloader - Shows until animation completes */}
-        {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
-
-        {/* Main Site */}
-        <Navbar />
-        <main>
-          <Hero />
-          <Story />
-          <Journal />
-          <Showcase />
-          <Collection />
-        </main>
-        <Footer />
-
-      </div>
-    </ScrollProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
