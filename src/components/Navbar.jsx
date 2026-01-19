@@ -52,20 +52,39 @@ const Navbar = () => {
 
         {/* Center: Desktop Menu */}
         <div className="d-none d-lg-flex gap-5 position-absolute start-50 translate-middle-x">
-          {['Collection', 'Journal', 'About'].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              className="text-decoration-none text-uppercase"
-              style={{
-                fontSize: '0.7rem',
-                letterSpacing: '0.15em',
-                color: 'inherit'
-              }}
-            >
-              {item}
-            </a>
-          ))}
+          <Link
+            to="/stories"
+            className="text-decoration-none text-uppercase"
+            style={{
+              fontSize: '0.7rem',
+              letterSpacing: '0.15em',
+              color: 'inherit'
+            }}
+          >
+            Collection
+          </Link>
+          <Link
+            to="/journal"
+            className="text-decoration-none text-uppercase"
+            style={{
+              fontSize: '0.7rem',
+              letterSpacing: '0.15em',
+              color: 'inherit'
+            }}
+          >
+            Journal
+          </Link>
+          <a
+            href="#about"
+            className="text-decoration-none text-uppercase"
+            style={{
+              fontSize: '0.7rem',
+              letterSpacing: '0.15em',
+              color: 'inherit'
+            }}
+          >
+            About
+          </a>
         </div>
 
         {/* Right: Actions */}
@@ -125,17 +144,30 @@ const Navbar = () => {
         </button>
 
         <nav className="d-flex flex-column gap-4 text-center">
-          {['Collection', 'Journal', 'About'].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              onClick={() => setMenuOpen(false)}
-              className="text-decoration-none font-serif display-5"
-              style={{ color: 'var(--text-main, #111)' }}
-            >
-              {item}
-            </a>
-          ))}
+          <Link
+            to="/stories"
+            onClick={() => setMenuOpen(false)}
+            className="text-decoration-none font-serif display-5"
+            style={{ color: 'var(--text-main, #111)' }}
+          >
+            Collection
+          </Link>
+          <Link
+            to="/journal"
+            onClick={() => setMenuOpen(false)}
+            className="text-decoration-none font-serif display-5"
+            style={{ color: 'var(--text-main, #111)' }}
+          >
+            Journal
+          </Link>
+          <a
+            href="#about"
+            onClick={() => setMenuOpen(false)}
+            className="text-decoration-none font-serif display-5"
+            style={{ color: 'var(--text-main, #111)' }}
+          >
+            About
+          </a>
           <Link
             to="/login"
             onClick={() => setMenuOpen(false)}

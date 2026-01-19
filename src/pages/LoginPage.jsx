@@ -74,7 +74,7 @@ function LoginPage() {
             {/* Right Side - Form */}
             <div className="login-form-side" ref={formRef}>
                 <Link to="/" className="login-brand font-serif">
-                    LUMIÈRE
+                    BECANÉ.
                 </Link>
 
                 <div className="login-form-container">
