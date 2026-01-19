@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -159,8 +160,8 @@ const Story = () => {
                     In a world of noise, we create the pause. Every piece is a meditation on restraint,
                     crafted for those who understand that true luxury whispers.
                 </p>
-                <a
-                    href="#"
+                <Link
+                    to="/manifesto"
                     className="mt-5 text-decoration-none text-uppercase pb-1"
                     style={{
                         fontSize: '0.75rem',
@@ -170,7 +171,7 @@ const Story = () => {
                     }}
                 >
                     Read The Manifesto
-                </a>
+                </Link>
             </div>
 
         </section>

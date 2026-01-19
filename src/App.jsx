@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import JournalPage from './pages/JournalPage';
 import ShopByStoryPage from './pages/ShopByStoryPage';
+import ManifestoPage from './pages/ManifestoPage';
 
 /**
  * App Component - Main Application Router
@@ -20,6 +21,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/journal" element={<JournalPage />} />
         <Route path="/stories" element={<ShopByStoryPage />} />
+        <Route path="/manifesto" element={<ManifestoPage />} />
       </Routes>
     </BrowserRouter>
   );
