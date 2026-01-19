@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 /**
  * Footer - "The Foundation"
@@ -79,6 +80,14 @@ const Footer = () => {
                             <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Instagram</a></li>
                             <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Pinterest</a></li>
                             <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>The Journal</a></li>
+                        </ul>
+                    </div>
+
+                    <div className="col-6 col-lg-2">
+                        <h4 className="text-meta mb-4" style={{ color: '#666', letterSpacing: '0.15em' }}>Account</h4>
+                        <ul className="list-unstyled d-flex flex-column gap-3">
+                            <li><Link to="/login" className="text-decoration-none" style={{ color: '#CCC' }}>Sign In</Link></li>
+                            <li><Link to="/register" className="text-decoration-none" style={{ color: '#CCC' }}>Create Account</Link></li>
                         </ul>
                     </div>
 
