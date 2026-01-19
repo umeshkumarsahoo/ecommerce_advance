@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 
 /**
@@ -80,13 +81,13 @@ const Navbar = () => {
           </button>
 
           {/* Login - Desktop */}
-          <a
-            href="#login"
+          <Link
+            to="/login"
             className="text-decoration-none text-uppercase d-none d-md-block"
             style={{ fontSize: '0.7rem', letterSpacing: '0.15em', color: 'inherit' }}
           >
             Login
-          </a>
+          </Link>
 
           {/* Mobile Menu Button */}
           <button
@@ -124,7 +125,7 @@ const Navbar = () => {
         </button>
 
         <nav className="d-flex flex-column gap-4 text-center">
-          {['Collection', 'Journal', 'About', 'Login', 'Signup'].map((item) => (
+          {['Collection', 'Journal', 'About'].map((item) => (
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
@@ -135,6 +136,22 @@ const Navbar = () => {
               {item}
             </a>
           ))}
+          <Link
+            to="/login"
+            onClick={() => setMenuOpen(false)}
+            className="text-decoration-none font-serif display-5"
+            style={{ color: 'var(--text-main, #111)' }}
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            onClick={() => setMenuOpen(false)}
+            className="text-decoration-none font-serif display-5"
+            style={{ color: 'var(--text-main, #111)' }}
+          >
+            Signup
+          </Link>
         </nav>
       </div>
     </>
