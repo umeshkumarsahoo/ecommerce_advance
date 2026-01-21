@@ -1,21 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import AnimatedText from '../components/AnimatedText';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/**
- * JournalPage - Editorial Storytelling
- * 
- * Luxury fashion magazine-style layout with:
- * - Featured article hero
- * - Typography-driven design
- * - Editorial article blocks
- * - Generous whitespace
- */
-
-// Sample journal articles data
 const articles = [
     {
         id: 1,
@@ -62,55 +53,26 @@ const articles = [
 
 function JournalPage() {
     const pageRef = useRef(null);
-    const featuredRef = useRef(null);
-    const articlesRef = useRef(null);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Featured article entrance
-            gsap.set('.journal-featured', { opacity: 0 });
-            gsap.set('.journal-featured-image', { scale: 1.1 });
-            gsap.set('.journal-featured-content', { opacity: 0, y: 60 });
-
-            const tl = gsap.timeline({ delay: 0.3 });
-
-            tl.to('.journal-featured', {
-                opacity: 1,
-                duration: 0.5
-            })
-                .to('.journal-featured-image', {
-                    scale: 1,
-                    duration: 1.4,
-                    ease: 'power3.out'
-                }, '-=0.3')
-                .to('.journal-featured-content', {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1,
-                    ease: 'power3.out'
-                }, '-=1');
-
-            // Article cards scroll animation
             gsap.utils.toArray('.journal-article').forEach((article, i) => {
-                gsap.set(article, { opacity: 0, y: 50 });
-
-                ScrollTrigger.create({
-                    trigger: article,
-                    start: 'top 85%',
-                    onEnter: () => {
-                        gsap.to(article, {
-                            opacity: 1,
-                            y: 0,
-                            duration: 0.8,
-                            delay: i * 0.1,
-                            ease: 'power3.out'
-                        });
+                const img = article.querySelector('img');
+                gsap.fromTo(article,
+                    { opacity: 0, y: 50 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 1,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: article,
+                            start: 'top 85%'
+                        }
                     }
-                });
+                );
             });
-
         }, pageRef);
-
         return () => ctx.revert();
     }, []);
 
@@ -118,61 +80,66 @@ function JournalPage() {
     const otherArticles = articles.filter(a => !a.featured);
 
     return (
-        <div className="journal-page" ref={pageRef}>
+        <div ref={pageRef} style={{ background: 'var(--bg-color)', minHeight: '100vh', paddingTop: '100px' }}>
+            <Navbar />
 
-            {/* Navigation */}
-            <nav className="journal-nav">
-                <Link to="/" className="journal-brand font-serif">BECANÉ</Link>
-                <span className="journal-title text-meta">The Journal</span>
-            </nav>
+            <div className="container section">
+                <AnimatedText>
+                    <span className="text-meta" style={{ display: 'block', marginBottom: '1rem', textAlign: 'center' }}>THE JOURNAL</span>
+                </AnimatedText>
 
-            {/* Featured Article Hero */}
-            <section className="journal-featured" ref={featuredRef}>
-                <div className="journal-featured-image-wrapper">
-                    <img
-                        src={featured.image}
-                        alt={featured.title}
-                        className="journal-featured-image"
-                    />
-                    <div className="journal-featured-overlay"></div>
+                {/* Featured Article */}
+                <div style={{ marginBottom: '8rem' }}>
+                    <div style={{ aspectRatio: '21/9', overflow: 'hidden', marginBottom: '2rem' }}>
+                        <img
+                            src={featured.image}
+                            alt={featured.title}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                    </div>
+                    <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+                        <AnimatedText>
+                            <span className="text-meta">{featured.category} — {featured.date}</span>
+                        </AnimatedText>
+                        <AnimatedText delay={0.2}>
+                            <h1 className="text-display-lg font-serif" style={{ margin: '1rem 0' }}>{featured.title}</h1>
+                        </AnimatedText>
+                        <AnimatedText delay={0.4}>
+                            <p className="text-body-lg" style={{ color: 'var(--text-muted)' }}>{featured.excerpt}</p>
+                        </AnimatedText>
+                        <div style={{ marginTop: '2rem' }}>
+                            <a href="#" className="hover-underline text-meta">Read Article</a>
+                        </div>
+                    </div>
                 </div>
-                <div className="journal-featured-content">
-                    <span className="text-meta">{featured.category}</span>
-                    <h1 className="font-serif">{featured.title}</h1>
-                    <p>{featured.excerpt}</p>
-                    <span className="text-meta">{featured.date}</span>
-                </div>
-            </section>
 
-            {/* Articles Grid */}
-            <section className="journal-articles" ref={articlesRef}>
-                <div className="journal-articles-header">
-                    <h2 className="display-lg font-serif">Recent Stories</h2>
-                    <p className="text-muted">Perspectives on craft, culture, and contemporary life</p>
-                </div>
-
-                <div className="journal-articles-grid">
+                {/* Article Grid */}
+                <div className="grid-cols-2" style={{ gap: '6rem 3rem' }}>
                     {otherArticles.map((article) => (
-                        <article key={article.id} className="journal-article">
-                            <div className="journal-article-image-wrapper">
-                                <img src={article.image} alt={article.title} />
+                        <article key={article.id} className="journal-article" style={{ cursor: 'pointer' }}>
+                            <div style={{ aspectRatio: '4/3', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                                <img
+                                    src={article.image}
+                                    alt={article.title}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s ease' }}
+                                    onMouseEnter={e => e.target.style.transform = 'scale(1.05)'}
+                                    onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+                                />
                             </div>
-                            <div className="journal-article-content">
-                                <span className="text-meta">{article.category}</span>
-                                <h3 className="font-serif">{article.title}</h3>
-                                <p>{article.excerpt}</p>
-                                <span className="text-meta journal-article-date">{article.date}</span>
+                            <div>
+                                <div className="flex-between" style={{ marginBottom: '0.5rem' }}>
+                                    <span className="text-meta">{article.category}</span>
+                                    <span className="text-meta">{article.date}</span>
+                                </div>
+                                <h3 className="text-display-md font-serif" style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>{article.title}</h3>
+                                <p className="text-body-lg" style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>{article.excerpt}</p>
                             </div>
                         </article>
                     ))}
                 </div>
-            </section>
+            </div>
 
-            {/* Footer */}
-            <footer className="journal-footer">
-                <p className="text-meta">Designed by Aditi · Ayushkant · Umesh</p>
-            </footer>
-
+            <Footer />
         </div>
     );
 }

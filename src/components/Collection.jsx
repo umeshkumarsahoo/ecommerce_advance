@@ -1,15 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import AnimatedText from './AnimatedText';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/**
- * Collection Section - "The Gallery"
- * 
- * Parallax product grid with staggered columns.
- * Uses CSS variables for Dark/Light mode support.
- */
 const products = [
     { id: 1, name: "The Trench", price: "€1,200", img: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1936&auto=format&fit=crop" },
     { id: 2, name: "Silk Blouse", price: "€450", img: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=2072&auto=format&fit=crop" },
@@ -17,120 +12,79 @@ const products = [
     { id: 4, name: "Leather Tote", price: "€890", img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1935&auto=format&fit=crop" },
 ];
 
+/**
+ * Collection Section
+ * 
+ * Staggered grid layout.
+ */
 const Collection = () => {
-    const containerRef = useRef(null);
+    const sectionRef = useRef(null);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Parallax effect for odd items
             gsap.utils.toArray('.product-card.odd').forEach(card => {
                 gsap.to(card, {
-                    y: -80,
+                    y: -50,
                     ease: 'none',
                     scrollTrigger: {
-                        trigger: containerRef.current,
+                        trigger: sectionRef.current,
                         start: 'top bottom',
                         end: 'bottom top',
                         scrub: true
                     }
                 });
             });
-        }, containerRef);
+        }, sectionRef);
         return () => ctx.revert();
     }, []);
 
     return (
-        <section
-            ref={containerRef}
-            id="collection"
-            className="py-5"
-            style={{
-                minHeight: '100vh',
-                backgroundColor: 'var(--bg-color)',
-                paddingTop: '15vh',
-                paddingBottom: '15vh'
-            }}
-        >
-            <div className="container-fluid px-4 px-md-5">
-
-                {/* Section Header */}
-                <div className="text-center mb-5 pb-5">
-                    <span
-                        className="text-meta d-block mb-3"
-                        style={{ color: 'var(--text-muted)', letterSpacing: '0.2em' }}
-                    >
-                        SPRING / SUMMER 2026
-                    </span>
-                    <h2
-                        className="display-lg"
-                        style={{ color: 'var(--text-main)' }}
-                    >
-                        The Collection
-                    </h2>
+        <section ref={sectionRef} id="collection" className="section">
+            <div className="container">
+                <div style={{ textAlign: 'center', marginBottom: '8rem' }}>
+                    <AnimatedText>
+                        <span className="text-meta" style={{ marginBottom: '1rem', display: 'block' }}>SPRING / SUMMER 2026</span>
+                    </AnimatedText>
+                    <AnimatedText delay={0.2}>
+                        <h2 className="text-display-md font-serif">The Collection</h2>
+                    </AnimatedText>
                 </div>
 
-                {/* Product Grid */}
-                <div className="row g-4 g-md-5">
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                        gap: '4rem 2rem'
+                    }}
+                >
                     {products.map((p, i) => (
                         <div
                             key={p.id}
-                            className={`col-6 col-lg-3 product-card ${i % 2 !== 0 ? 'odd pt-md-5 mt-md-5' : ''}`}
+                            className={`product-card ${i % 2 !== 0 ? 'odd' : ''}`}
+                            style={{ paddingTop: i % 2 !== 0 ? '4rem' : '0' }}
                         >
-                            <div className="position-relative overflow-hidden" style={{ cursor: 'pointer' }}>
-                                {/* Image */}
-                                <div className="overflow-hidden mb-3">
-                                    <img
-                                        src={p.img}
-                                        alt={p.name}
-                                        className="w-100 object-fit-cover"
-                                        style={{
-                                            aspectRatio: '3/4',
-                                            transition: 'transform 1s cubic-bezier(0.19, 1, 0.22, 1)'
-                                        }}
-                                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                                    />
-                                </div>
-
-                                {/* Product Info */}
-                                <div
-                                    className="d-flex justify-content-between align-items-baseline pb-2"
-                                    style={{ borderBottom: '1px solid var(--text-main)' }}
-                                >
-                                    <h3
-                                        className="h6 font-serif mb-0"
-                                        style={{ fontWeight: 400, color: 'var(--text-main)' }}
-                                    >
-                                        {p.name}
-                                    </h3>
-                                    <span
-                                        className="text-meta"
-                                        style={{ color: 'var(--text-muted)' }}
-                                    >
-                                        {p.price}
-                                    </span>
-                                </div>
+                            <div style={{ position: 'relative', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                                <img
+                                    src={p.img}
+                                    alt={p.name}
+                                    style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', transition: 'transform 0.5s ease' }}
+                                    onMouseEnter={e => e.target.style.transform = 'scale(1.05)'}
+                                    onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+                                />
+                            </div>
+                            <div className="flex-between">
+                                <h3 className="text-body-lg font-serif">{p.name}</h3>
+                                <span className="text-meta">{p.price}</span>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* View All Button */}
-                <div className="text-center mt-5 pt-5">
-                    <a
-                        href="#"
-                        className="btn btn-outline-dark rounded-0 px-5 py-3 text-uppercase"
-                        style={{
-                            fontSize: '0.75rem',
-                            letterSpacing: '0.15em',
-                            color: 'var(--text-main)',
-                            borderColor: 'var(--text-main)'
-                        }}
-                    >
+                <div style={{ textAlign: 'center', marginTop: '8rem' }}>
+                    <a href="#" className="hover-underline text-meta" style={{ color: 'var(--text-main)' }}>
                         View All Products
                     </a>
                 </div>
-
             </div>
         </section>
     );

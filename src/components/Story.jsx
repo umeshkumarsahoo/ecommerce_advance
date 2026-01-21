@@ -1,55 +1,34 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { gsap } from 'gsap';
+import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import AnimatedText from './AnimatedText';
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * Story Section - "The Vortex"
+ * Story Section - "The Philosophy"
  * 
- * Anti-Grid Layout with floating parallax images.
- * Uses CSS variables for Dark/Light mode support.
+ * Immersive layout with floating images and central philosophy text.
  */
 const Story = () => {
     const containerRef = useRef(null);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Parallax each image at different speeds
-            gsap.to('.float-img-1', {
-                yPercent: -30,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top bottom',
-                    end: 'bottom top',
-                    scrub: true
-                }
+            // Floating Images Parallax
+            gsap.utils.toArray('.floating-image').forEach((img, i) => {
+                gsap.to(img, {
+                    yPercent: i % 2 === 0 ? -20 : 20,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 1
+                    }
+                });
             });
-
-            gsap.to('.float-img-2', {
-                yPercent: 20,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top bottom',
-                    end: 'bottom top',
-                    scrub: true
-                }
-            });
-
-            gsap.to('.float-img-3', {
-                yPercent: -50,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top bottom',
-                    end: 'bottom top',
-                    scrub: true
-                }
-            });
-
         }, containerRef);
         return () => ctx.revert();
     }, []);
@@ -57,123 +36,87 @@ const Story = () => {
     return (
         <section
             ref={containerRef}
-            id="story"
-            className="position-relative overflow-hidden"
+            className="section"
             style={{
-                minHeight: '150vh',
-                backgroundColor: 'var(--bg-color)',
-                paddingTop: '20vh',
-                paddingBottom: '20vh'
+                minHeight: '120vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative'
             }}
         >
-
-            {/* Floating Image 1 - Top Left */}
+            {/* Floating Images (Decorative) */}
             <div
-                className="float-img-1 position-absolute d-none d-md-block"
+                className="floating-image"
                 style={{
+                    position: 'absolute',
                     top: '10%',
                     left: '5%',
-                    width: '25vw',
-                    height: '35vh',
-                    zIndex: 1
+                    width: '20vw',
+                    aspectRatio: '3/4',
+                    overflow: 'hidden',
+                    opacity: 0.6,
+                    zIndex: 0
                 }}
             >
                 <img
                     src="https://images.unsplash.com/photo-1550614000-4b9519e02d48?q=80&w=1978&auto=format&fit=crop"
-                    alt="Atmosphere 1"
-                    className="w-100 h-100 object-fit-cover"
-                    style={{ filter: 'grayscale(20%)' }}
+                    alt="Atmosphere"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
             </div>
 
-            {/* Floating Image 2 - Bottom Right */}
             <div
-                className="float-img-2 position-absolute d-none d-md-block"
+                className="floating-image"
                 style={{
+                    position: 'absolute',
                     bottom: '15%',
                     right: '8%',
-                    width: '30vw',
-                    height: '40vh',
-                    zIndex: 1
+                    width: '25vw',
+                    aspectRatio: '16/9',
+                    overflow: 'hidden',
+                    opacity: 0.6,
+                    zIndex: 0
                 }}
             >
                 <img
                     src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=2071&auto=format&fit=crop"
-                    alt="Atmosphere 2"
-                    className="w-100 h-100 object-fit-cover"
-                    style={{ filter: 'grayscale(20%)' }}
+                    alt="Detail"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
             </div>
 
-            {/* Floating Image 3 - Center Left, Behind */}
-            <div
-                className="float-img-3 position-absolute d-none d-lg-block"
-                style={{
-                    top: '40%',
-                    left: '15%',
-                    width: '20vw',
-                    height: '25vh',
-                    zIndex: 0,
-                    opacity: 0.6
-                }}
-            >
-                <img
-                    src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=1972&auto=format&fit=crop"
-                    alt="Atmosphere 3"
-                    className="w-100 h-100 object-fit-cover"
-                    style={{ filter: 'grayscale(40%)' }}
-                />
-            </div>
+            {/* Central Content */}
+            <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '900px' }}>
+                <AnimatedText>
+                    <span className="text-meta" style={{ color: 'var(--accent)', marginBottom: '2rem', display: 'block' }}>
+                        THE PHILOSOPHY
+                    </span>
+                </AnimatedText>
 
-            {/* Central Text - Uses CSS Variables */}
-            <div
-                className="position-relative d-flex flex-column align-items-center justify-content-center text-center px-4"
-                style={{
-                    minHeight: '100vh',
-                    zIndex: 2
-                }}
-            >
-                <span
-                    className="text-meta mb-4"
-                    style={{ letterSpacing: '0.2em', color: 'var(--accent)' }}
-                >
-                    THE PHILOSOPHY
-                </span>
-                <h2
-                    className="display-1 font-serif mb-5"
-                    style={{
-                        lineHeight: 0.9,
-                        fontWeight: 400,
-                        maxWidth: '800px',
-                        fontSize: 'clamp(2.5rem, 8vw, 6rem)',
-                        color: 'var(--text-main)'
-                    }}
-                >
-                    We design for<br />
-                    <span className="fst-italic" style={{ opacity: 0.7 }}>the silence</span><br />
-                    between moments.
-                </h2>
-                <p
-                    className="lead mx-auto"
-                    style={{ maxWidth: '500px', fontWeight: 300, color: 'var(--text-muted)' }}
-                >
-                    In a world of noise, we create the pause. Every piece is a meditation on restraint,
-                    crafted for those who understand that true luxury whispers.
-                </p>
-                <Link
-                    to="/manifesto"
-                    className="mt-5 text-decoration-none text-uppercase pb-1"
-                    style={{
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.15em',
-                        color: 'var(--text-main)',
-                        borderBottom: '1px solid var(--text-main)'
-                    }}
-                >
-                    Read The Manifesto
-                </Link>
-            </div>
+                <AnimatedText delay={0.2}>
+                    <h2 className="text-display-lg font-serif" style={{ marginBottom: '3rem' }}>
+                        We design for <span className="fst-italic" style={{ opacity: 0.7 }}>the silence</span> between moments.
+                    </h2>
+                </AnimatedText>
 
+                <AnimatedText delay={0.4}>
+                    <p className="text-body-lg" style={{ color: 'var(--text-muted)', marginBottom: '4rem', marginInline: 'auto', maxWidth: '600px' }}>
+                        In a world of noise, we create the pause. Every piece is a meditation on restraint,
+                        crafted for those who understand that true luxury whispers.
+                    </p>
+                </AnimatedText>
+
+                <AnimatedText delay={0.6}>
+                    <Link
+                        to="/manifesto"
+                        className="hover-underline text-meta"
+                        style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}
+                    >
+                        Read The Manifesto
+                    </Link>
+                </AnimatedText>
+            </div>
         </section>
     );
 };

@@ -1,193 +1,121 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { gsap } from 'gsap';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+// import gsap from 'gsap'; // Reserved for future complex menu animations
 
 /**
- * Navbar - "The Header"
+ * Navbar.jsx
  * 
- * Minimal luxury navigation with:
- * - Brand logo (left)
- * - Navigation links (center - desktop only)
- * - Dark/Light toggle + Login (right)
- * - Mobile hamburger menu
+ * DESIGN PHILOSOPHY:
+ * The navigation bar serves as the "anchor" of the luxury experience. 
+ * Unlike standard headers, it floats above the content, letting the imagery underneath
+ * bleed through. This transparency creates depth and immersion.
+ * 
+ * TECHNICAL APPROACH:
+ * - We use a `scrolled` state to detect when the user has moved down the page.
+ * - Glassmorphism (blur + semi-transparent bg) is applied only on scroll to ensure
+ *   maximum legibility when content passes under navigation.
+ * - CSS transitions handle the smooth morphing from transparent to glass.
  */
+
 const Navbar = () => {
+  const location = useLocation();
+  // We can use isHome to apply different styles if needed (e.g. transparent on home, solid elsewhere)
+  const isHome = location.pathname === '/';
+
   const [scrolled, setScrolled] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Scroll Listener: Optimize performance by avoiding heavy calculations in the loop
   useEffect(() => {
     const handleScroll = () => {
+      // Toggle state only when crossing the threshold to minimize re-renders
       setScrolled(window.scrollY > 50);
     };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Toggle dark mode on body
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle('dark-mode');
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+    // Future: Add GSAP timeline here for a full-screen menu reveal
   };
 
   return (
-    <>
-      <nav
-        className={`fixed-top w-100 px-4 px-md-5 py-3 py-md-4 d-flex justify-content-between align-items-center`}
-        style={{
-          zIndex: 1000,
-          transition: 'background-color 0.5s, backdrop-filter 0.5s',
-          backgroundColor: scrolled ? 'rgba(243, 243, 243, 0.9)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(10px)' : 'none',
-          color: scrolled ? '#111' : 'white',
-          mixBlendMode: scrolled ? 'normal' : 'difference'
-        }}
-      >
-        {/* Left: Brand */}
-        <a href="#" className="text-decoration-none" style={{ color: 'inherit' }}>
-          <span className="font-serif h5 h4-md mb-0" style={{ letterSpacing: '-0.02em', fontWeight: 600 }}>
-            BECANE.
-          </span>
-        </a>
+    <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+      {/* 
+        Container Structure: 
+        We use 'flex-between' to push the logo and actions to the edges,
+        centering the navigation links visually if possible, or keeping a clean layout.
+      */}
+      <div className={`navbar-container container flex-between`} style={{
+        paddingTop: '2rem',
+        paddingBottom: '2rem',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        // Smooth transition for the background change
+        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        // Dynamic styles based on state
+        background: scrolled ? 'rgba(12, 12, 12, 0.85)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        height: scrolled ? '80px' : '100px',
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent'
+      }}>
 
-        {/* Center: Desktop Menu */}
-        <div className="d-none d-lg-flex gap-5 position-absolute start-50 translate-middle-x">
-          <Link
-            to="/stories"
-            className="text-decoration-none text-uppercase"
-            style={{
-              fontSize: '0.7rem',
-              letterSpacing: '0.15em',
-              color: 'inherit'
-            }}
-          >
-            Collection
-          </Link>
-          <Link
-            to="/journal"
-            className="text-decoration-none text-uppercase"
-            style={{
-              fontSize: '0.7rem',
-              letterSpacing: '0.15em',
-              color: 'inherit'
-            }}
-          >
-            Journal
-          </Link>
-          <a
-            href="#about"
-            className="text-decoration-none text-uppercase"
-            style={{
-              fontSize: '0.7rem',
-              letterSpacing: '0.15em',
-              color: 'inherit'
-            }}
-          >
-            About
-          </a>
-        </div>
+        {/* LOGO: Serif typography acts as the primary brand stamp */}
+        <Link to="/" className="navbar-brand text-display-md font-serif" style={{
+          fontSize: '1.5rem',
+          fontWeight: 600,
+          letterSpacing: '0.05em',
+          position: 'relative',
+          zIndex: 1002
+        }}>
+          BECANÉ.
+        </Link>
 
-        {/* Right: Actions */}
-        <div className="d-flex align-items-center gap-3 gap-md-4">
-          {/* Dark/Light Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="btn btn-link p-0 text-decoration-none"
-            style={{ color: 'inherit', fontSize: '0.7rem', letterSpacing: '0.1em' }}
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-
-          {/* Login - Desktop */}
-          <Link
-            to="/login"
-            className="text-decoration-none text-uppercase d-none d-md-block"
-            style={{ fontSize: '0.7rem', letterSpacing: '0.15em', color: 'inherit' }}
-          >
-            Login
-          </Link>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="btn btn-link p-0 d-lg-none"
-            onClick={() => setMenuOpen(true)}
-            style={{ color: 'inherit' }}
-            aria-label="Open menu"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      <div
-        className={`position-fixed top-0 start-0 w-100 vh-100 d-flex flex-column justify-content-center align-items-center ${menuOpen ? 'visible' : 'invisible'}`}
-        style={{
-          zIndex: 1001,
-          backgroundColor: 'var(--bg-color, #F3F3F3)',
-          opacity: menuOpen ? 1 : 0,
-          transition: 'opacity 0.4s ease, visibility 0.4s ease'
-        }}
-      >
-        <button
-          onClick={() => setMenuOpen(false)}
-          className="position-absolute top-0 end-0 m-4 btn btn-link text-decoration-none display-4"
-          style={{ color: 'var(--text-main, #111)' }}
-          aria-label="Close menu"
-        >
-          ×
-        </button>
-
-        <nav className="d-flex flex-column gap-4 text-center">
-          <Link
-            to="/stories"
-            onClick={() => setMenuOpen(false)}
-            className="text-decoration-none font-serif display-5"
-            style={{ color: 'var(--text-main, #111)' }}
-          >
-            Collection
-          </Link>
-          <Link
-            to="/journal"
-            onClick={() => setMenuOpen(false)}
-            className="text-decoration-none font-serif display-5"
-            style={{ color: 'var(--text-main, #111)' }}
-          >
-            Journal
-          </Link>
-          <a
-            href="#about"
-            onClick={() => setMenuOpen(false)}
-            className="text-decoration-none font-serif display-5"
-            style={{ color: 'var(--text-main, #111)' }}
-          >
-            About
-          </a>
-          <Link
-            to="/login"
-            onClick={() => setMenuOpen(false)}
-            className="text-decoration-none font-serif display-5"
-            style={{ color: 'var(--text-main, #111)' }}
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            onClick={() => setMenuOpen(false)}
-            className="text-decoration-none font-serif display-5"
-            style={{ color: 'var(--text-main, #111)' }}
-          >
-            Signup
-          </Link>
+        {/* 
+          DESKTOP NAVIGATION: 
+          Simple text links with a rigorous hover effect. 
+          Hidden on mobile to preserve minimalism.
+        */}
+        <nav className="navbar-links desktop-only" style={{ display: 'flex', gap: '3rem' }}>
+          <NavLink to="/journal" label="Journal" />
+          <NavLink to="/stories" label="Stories" />
+          <NavLink to="/manifesto" label="Philosophy" />
+          <NavLink to="/collections" label="Collections" />
+          <NavLink to="/contact" label="Contact" />
         </nav>
+
+        {/* 
+          ACTIONS: 
+          Functional links (Account, Cart) kept separate to distinct
+          utility from discovery.
+        */}
+        <div className="navbar-actions" style={{ display: 'flex', gap: '2rem', zIndex: 1002 }}>
+          <Link to="/login" className="text-meta hover-underline">Account</Link>
+          <Link to="/cart" className="text-meta hover-underline">Cart (0)</Link>
+        </div>
       </div>
-    </>
+
+      {/* Mobile Menu Styling Hook */}
+      <style>{`
+          @media (max-width: 768px) {
+              .desktop-only { display: none !important; }
+              /* Mobile menu icon would go here */
+          }
+      `}</style>
+    </header>
   );
 };
+
+// Sub-component for clean, repetitive link rendering
+const NavLink = ({ to, label }) => (
+  <Link to={to} className="nav-link text-meta hover-underline" style={{ fontSize: '0.8rem', letterSpacing: '0.15em' }}>
+    {label}
+  </Link>
+);
 
 export default Navbar;

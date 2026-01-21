@@ -1,52 +1,44 @@
 import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import AnimatedText from './AnimatedText';
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * Hero Section - "The Opening"
+ * Hero.jsx - "The Opening Statement"
  * 
- * First impression. Must be emotionally powerful.
- * Large image. Oversized poetic headline. Masked reveal.
- * This sets the tone for the entire experience.
+ * EDUCATIONAL NOTE:
+ * In luxury web design, the Hero section is not just about information; 
+ * it's about setting an emotional baseline. We use valid, heavy typography 
+ * and slow, cinematic motion to tell the user: "Slow down. This is different."
+ * 
+ * TECHNICAL BREAKDOWN:
+ * 1. Parallax Background: The image moves slower than the scroll speed (yPercent),
+ *    creating a sense of depth and scale.
+ * 2. Staggered Text: We don't show everything at once. We reveal elements 
+ *    sequentially (meta -> title -> subtitle -> CTA) to guide the eye.
  */
+
 const Hero = () => {
     const containerRef = useRef(null);
+    const bgRef = useRef(null);
 
     useEffect(() => {
+        // GSAP Context ensures animations are cleaned up properly when component unmounts
         const ctx = gsap.context(() => {
-            // Text reveal - slides up from mask
-            gsap.to('.hero-line', {
-                y: 0,
-                duration: 1.5,
-                ease: 'power4.out',
-                stagger: 0.1,
-                delay: 0.3
-            });
-
-            // Background zoom out
-            gsap.fromTo('.hero-bg',
-                { scale: 1.2 },
-                {
-                    scale: 1,
-                    duration: 2,
-                    ease: 'power2.out'
-                }
-            );
-
-            // Parallax on scroll
-            gsap.to('.hero-bg', {
-                yPercent: 30,
-                ease: 'none',
+            // Parallax Effect matches the "Kinetic" theme
+            gsap.to(bgRef.current, {
+                yPercent: 30, // Move the image down 30% of its height as we scroll
+                scale: 1.1,   // Slight zoom to prevent whitespace at edges
+                ease: 'none', // Linear ease is crucial for parallax to feel 'attached' to scroll
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: 'top top',
                     end: 'bottom top',
-                    scrub: true
+                    scrub: true // Animation progress is tied directly to scrollbar
                 }
             });
-
         }, containerRef);
         return () => ctx.revert();
     }, []);
@@ -54,83 +46,77 @@ const Hero = () => {
     return (
         <section
             ref={containerRef}
-            className="vh-100 position-relative d-flex align-items-center justify-content-center overflow-hidden"
+            className="hero-section"
+            style={{
+                height: '100vh',
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff'
+            }}
         >
-
-            {/* Background Image */}
-            <div className="position-absolute top-0 start-0 w-100 h-100">
+            {/* 
+                BACKGROUND LAYER 
+                Absolute positioning places it behind content. 
+                We make it taller (120%) so it has room to move for parallax.
+            */}
+            <div
+                ref={bgRef}
+                className="hero-bg"
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '120%',
+                    zIndex: 0
+                }}
+            >
                 <img
                     src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2070&auto=format&fit=crop"
                     alt="Campaign"
-                    className="hero-bg w-100 h-100 object-fit-cover"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
-                <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-25"></div>
+                {/* Overlay ensures text readability regardless of image brightness */}
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }}></div>
             </div>
 
-            {/* Content */}
-            <div className="position-relative z-1 text-center text-white">
-
-                {/* Subtitle */}
-                <div className="overflow-hidden mb-3">
-                    <span
-                        className="hero-line d-block text-meta"
-                        style={{
-                            transform: 'translateY(100%)',
-                            letterSpacing: '0.25em',
-                            opacity: 0.8
-                        }}
-                    >
+            {/* 
+                CONTENT LAYER 
+                Z-index ensures it sits on top of the background.
+                "AnimatedText" handles the entrance animations.
+            */}
+            <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                <AnimatedText delay={0.5}>
+                    <p className="text-meta" style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '1.5vh', letterSpacing: '0.2em' }}>
                         SPRING / SUMMER 2026
-                    </span>
+                    </p>
+                </AnimatedText>
+
+                <div style={{ marginBottom: '2vh' }}>
+                    <AnimatedText delay={0.7}>
+                        <h1 className="text-display-xl font-serif" style={{ lineHeight: 0.9 }}>
+                            KINETIC
+                        </h1>
+                    </AnimatedText>
+                    <AnimatedText delay={0.9}>
+                        <h1 className="text-display-xl font-serif fst-italic" style={{ lineHeight: 0.9, opacity: 0.8 }}>
+                            SILENCE
+                        </h1>
+                    </AnimatedText>
                 </div>
 
-                {/* Main Headline */}
-                <div className="overflow-hidden">
-                    <h1
-                        className="hero-line display-mega mb-0"
-                        style={{ transform: 'translateY(100%)' }}
-                    >
-                        KINETIC
-                    </h1>
-                </div>
-                <div className="overflow-hidden">
-                    <h1
-                        className="hero-line display-mega mb-0 fst-italic"
-                        style={{
-                            transform: 'translateY(100%)',
-                            opacity: 0.7
-                        }}
-                    >
-                        SILENCE
-                    </h1>
-                </div>
-
-                {/* CTA */}
-                <div className="overflow-hidden mt-5">
+                <AnimatedText delay={1.2}>
                     <a
                         href="#collection"
-                        className="hero-line d-inline-block text-white text-decoration-none border-bottom border-white pb-1 text-uppercase"
-                        style={{
-                            transform: 'translateY(100%)',
-                            fontSize: '0.8rem',
-                            letterSpacing: '0.15em'
-                        }}
+                        className="hover-underline text-meta"
+                        style={{ color: '#fff', fontSize: '0.8rem', letterSpacing: '0.1em' }}
                     >
                         Discover Collection
                     </a>
-                </div>
-
-            </div>
-
-            {/* Scroll Indicator */}
-            <div
-                className="position-absolute bottom-0 start-50 translate-middle-x mb-5 text-white"
-                style={{ opacity: 0.6 }}
-            >
-                <div className="d-flex flex-column align-items-center">
-                    <span className="text-meta mb-2" style={{ fontSize: '0.65rem' }}>SCROLL</span>
-                    <div style={{ width: '1px', height: '40px', backgroundColor: 'white' }}></div>
-                </div>
+                </AnimatedText>
             </div>
 
         </section>

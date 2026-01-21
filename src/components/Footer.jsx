@@ -2,120 +2,88 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * Footer - "The Foundation"
+ * Footer.jsx - "The Final Impression"
  * 
- * Grand, architectural footer with proper contrast.
- * Newsletter, navigation links, and designer credits.
+ * EDUCATIONAL NOTE:
+ * A footer in luxury design is not a dumping ground for links. 
+ * It is a structured summary of the brand.
+ * 
+ * DESIGN PATTERNS:
+ * 1. Massive Brand Name: Placing the logo large and low opacity creates
+ *    a "watermark" effect, reinforcing brand identity subtly.
+ * 2. Grid Layout: 3-column layouts act as a stable foundation.
+ * 3. Minimalist Inputs: The newsletter form is stripped of borders (except bottom)
+ *    to feel less like a "form" and more like an "invitation".
  */
+
 const Footer = () => {
     return (
-        <footer
-            className="footer pt-5 pb-4"
-            style={{
-                backgroundColor: 'var(--footer-bg, #111)',
-                color: 'var(--footer-text, #F3F3F3)',
-                minHeight: '60vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-            }}
-        >
+        <footer className="footer section" style={{ background: '#080808', paddingTop: '6rem', paddingBottom: '3rem' }}>
+            <div className="container">
 
-            {/* Top Section: Newsletter & Links */}
-            <div className="container-fluid px-4 px-md-5 pt-5">
-                <div className="row g-5">
+                {/* 
+                    BRAND WATERMARK
+                    Low opacity (0.1) allows it to be huge without competing for attention.
+                */}
+                <div className="footer-top" style={{ marginBottom: '6rem' }}>
+                    <h2 className="text-display-xl font-serif" style={{ opacity: 0.1, textAlign: 'center', userSelect: 'none' }}>BECANÉ</h2>
+                </div>
 
-                    {/* Newsletter Column */}
-                    <div className="col-lg-5 mb-5 mb-lg-0">
-                        <h3 className="h2 font-serif mb-4" style={{ fontWeight: 400, color: '#F3F3F3' }}>
-                            Stay in the know.
-                        </h3>
-                        <p className="mb-4" style={{ maxWidth: '350px', color: '#999', fontSize: '0.95rem' }}>
-                            Receive updates on new collections, exclusive events, and editorial stories.
-                        </p>
-                        <form className="d-flex border-bottom pb-2" style={{ maxWidth: '400px', borderColor: '#444 !important' }}>
+                {/* 
+                    NAVIGATION GRID
+                    Uses CSS Grid for perfect alignment. On mobile, this stacks (handled in global CSS).
+                */}
+                <div className="footer-grid grid-cols-3 text-meta" style={{ marginBottom: '6rem', alignItems: 'start' }}>
+                    <div className="footer-col">
+                        <h4 style={{ color: '#fff', marginBottom: '1.5rem' }}>Navigation</h4>
+                        <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                            <li><Link to="/" className="hover-underline">Home</Link></li>
+                            <li><Link to="/journal" className="hover-underline">Journal</Link></li>
+                            <li><Link to="/stories" className="hover-underline">Stories</Link></li>
+                            <li><Link to="/manifesto" className="hover-underline">Philosophy</Link></li>
+                            <li><Link to="/collections" className="hover-underline">Collections</Link></li>
+                        </ul>
+                    </div>
+
+                    <div className="footer-col">
+                        <h4 style={{ color: '#fff', marginBottom: '1.5rem' }}>Social</h4>
+                        <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                            <li><a href="#" className="hover-underline">Instagram</a></li>
+                            <li><a href="#" className="hover-underline">Twitter / X</a></li>
+                            <li><a href="#" className="hover-underline">LinkedIn</a></li>
+                        </ul>
+                    </div>
+
+                    <div className="footer-col" style={{ textAlign: 'right' }}>
+                        <h4 style={{ color: '#fff', marginBottom: '1.5rem' }}>Newsletter</h4>
+                        {/* Minimalist Form Design */}
+                        <div className="newsletter-form" style={{ borderBottom: '1px solid #333', paddingBottom: '0.5rem', display: 'flex' }}>
                             <input
                                 type="email"
-                                placeholder="Your email address"
-                                className="bg-transparent border-0 w-100"
-                                style={{ outline: 'none', color: '#F3F3F3' }}
+                                placeholder="Email Address"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#fff',
+                                    width: '100%',
+                                    outline: 'none',
+                                    fontFamily: 'var(--font-sans)'
+                                }}
                             />
-                            <button
-                                type="submit"
-                                className="btn btn-link text-decoration-none p-0 text-uppercase"
-                                style={{ fontSize: '0.75rem', letterSpacing: '0.1em', color: '#D4AF37' }}
-                            >
-                                Subscribe
-                            </button>
-                        </form>
+                            <button className="text-meta hover-underline">Join</button>
+                        </div>
                     </div>
+                </div>
 
-                    {/* Spacer */}
-                    <div className="col-lg-1 d-none d-lg-block"></div>
-
-                    {/* Links Columns */}
-                    <div className="col-6 col-lg-2">
-                        <h4 className="text-meta mb-4" style={{ color: '#666', letterSpacing: '0.15em' }}>Shop</h4>
-                        <ul className="list-unstyled d-flex flex-column gap-3">
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>New Arrivals</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Ready-to-Wear</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Accessories</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Gift Guide</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="col-6 col-lg-2">
-                        <h4 className="text-meta mb-4" style={{ color: '#666', letterSpacing: '0.15em' }}>Help</h4>
-                        <ul className="list-unstyled d-flex flex-column gap-3">
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Contact Us</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Shipping</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Returns</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Size Guide</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="col-6 col-lg-2">
-                        <h4 className="text-meta mb-4" style={{ color: '#666', letterSpacing: '0.15em' }}>Connect</h4>
-                        <ul className="list-unstyled d-flex flex-column gap-3">
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Instagram</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>Pinterest</a></li>
-                            <li><a href="#" className="text-decoration-none" style={{ color: '#CCC' }}>The Journal</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="col-6 col-lg-2">
-                        <h4 className="text-meta mb-4" style={{ color: '#666', letterSpacing: '0.15em' }}>Account</h4>
-                        <ul className="list-unstyled d-flex flex-column gap-3">
-                            <li><Link to="/login" className="text-decoration-none" style={{ color: '#CCC' }}>Sign In</Link></li>
-                            <li><Link to="/register" className="text-decoration-none" style={{ color: '#CCC' }}>Create Account</Link></li>
-                        </ul>
-                    </div>
-
+                {/* 
+                    COPYRIGHT & CREDITS
+                    The "sign-off" of the digital experience.
+                */}
+                <div className="footer-bottom flex-between text-meta" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2rem', color: 'var(--text-muted)' }}>
+                    <p>&copy; 2026 Becané. All rights reserved.</p>
+                    <p style={{ letterSpacing: '0.05em' }}>Designed by Aditi · Ayushkant · Umesh</p>
                 </div>
             </div>
-
-            {/* Bottom Section: Brand Watermark & Copyright */}
-            <div className="container-fluid px-4 px-md-5 text-center overflow-hidden mt-5">
-                <h1
-                    className="font-serif mb-4 opacity-10"
-                    style={{
-                        fontSize: 'clamp(4rem, 15vw, 12rem)',
-                        lineHeight: 0.85,
-                        color: '#333',
-                        fontWeight: 400
-                    }}
-                >
-                    BECANE
-                </h1>
-                <div
-                    className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 pb-4"
-                    style={{ fontSize: '0.7rem', color: '#666' }}
-                >
-                    <span>© 2026 BECANE. All Rights Reserved.</span>
-                    <span style={{ color: '#888' }}>Designed by Aditi · Ayushkant · Umesh</span>
-                </div>
-            </div>
-
         </footer>
     );
 };

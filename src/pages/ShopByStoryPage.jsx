@@ -1,20 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import AnimatedText from '../components/AnimatedText';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/**
- * ShopByStoryPage - Curated Collections Through Narratives
- * 
- * Users browse by themes rather than categories:
- * - Each section is a curated world
- * - Story-driven editorial approach
- * - Discovery-focused experience
- */
-
-// Story collections data
 const stories = [
     {
         id: 'urban-silence',
@@ -55,112 +47,131 @@ function ShopByStoryPage() {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Hero entrance
-            gsap.set('.stories-hero-title', { opacity: 0, y: 80 });
-            gsap.set('.stories-hero-subtitle', { opacity: 0 });
-
-            gsap.to('.stories-hero-title', {
-                opacity: 1,
-                y: 0,
-                duration: 1.2,
-                delay: 0.3,
-                ease: 'power3.out'
-            });
-            gsap.to('.stories-hero-subtitle', {
-                opacity: 1,
-                duration: 1,
-                delay: 0.8,
-                ease: 'power2.out'
-            });
-
-            // Story sections scroll animation
-            gsap.utils.toArray('.story-section').forEach((section) => {
-                const image = section.querySelector('.story-image');
+            gsap.utils.toArray('.story-section').forEach((section, i) => {
+                const img = section.querySelector('.story-img');
                 const content = section.querySelector('.story-content');
 
-                gsap.set(image, { clipPath: 'inset(0 100% 0 0)' });
-                gsap.set(content, { opacity: 0, x: 50 });
-
-                ScrollTrigger.create({
-                    trigger: section,
-                    start: 'top 70%',
-                    onEnter: () => {
-                        gsap.to(image, {
-                            clipPath: 'inset(0 0% 0 0)',
-                            duration: 1.2,
-                            ease: 'power4.out'
-                        });
-                        gsap.to(content, {
-                            opacity: 1,
-                            x: 0,
-                            duration: 1,
-                            delay: 0.3,
-                            ease: 'power3.out'
-                        });
+                // Parallax for image
+                gsap.fromTo(img,
+                    { yPercent: -10, scale: 1.1 },
+                    {
+                        yPercent: 10,
+                        scale: 1.1,
+                        ease: 'none',
+                        scrollTrigger: {
+                            trigger: section,
+                            start: 'top bottom',
+                            end: 'bottom top',
+                            scrub: true
+                        }
                     }
-                });
+                );
             });
-
         }, pageRef);
-
         return () => ctx.revert();
     }, []);
 
     return (
-        <div className="stories-page" ref={pageRef}>
+        <div ref={pageRef} style={{ background: 'var(--bg-color)', minHeight: '100vh', paddingTop: '100px' }}>
+            <Navbar />
 
-            {/* Navigation */}
-            <nav className="journal-nav">
-                <Link to="/" className="journal-brand font-serif">BECANÉ</Link>
-                <span className="journal-title text-meta">Shop by Story</span>
-            </nav>
+            <div className="container" style={{ textAlign: 'center', padding: '10vh 0' }}>
+                <AnimatedText>
+                    <h1 className="text-display-xl font-serif">Narratives</h1>
+                </AnimatedText>
+                <AnimatedText delay={0.2}>
+                    <p className="text-body-lg" style={{ color: 'var(--text-muted)', marginTop: '2rem' }}>
+                        Curated worlds defining our aesthetic.
+                    </p>
+                </AnimatedText>
+            </div>
 
-            {/* Hero */}
-            <section className="stories-hero">
-                <h1 className="stories-hero-title display-mega font-serif">
-                    Discover<br />Through<br />Narrative
-                </h1>
-                <p className="stories-hero-subtitle">
-                    Collections curated not by category, but by feeling
-                </p>
-            </section>
-
-            {/* Story Sections */}
             <div className="stories-container">
                 {stories.map((story, index) => (
                     <section
                         key={story.id}
-                        className={`story-section ${index % 2 === 1 ? 'story-section-reverse' : ''}`}
+                        className="story-section section"
+                        style={{ padding: '0 0 10vh 0' }}
                     >
-                        <div className="story-image-wrapper">
-                            <img
-                                src={story.image}
-                                alt={story.title}
-                                className="story-image"
-                            />
-                        </div>
-                        <div className="story-content">
-                            <span className="text-meta story-number">0{index + 1}</span>
-                            <h2 className="display-lg font-serif">{story.title}</h2>
-                            <span className="story-subtitle">{story.subtitle}</span>
-                            <p className="story-description">{story.description}</p>
-                            <div className="story-products">
-                                {story.products.map((product, i) => (
-                                    <span key={i} className="story-product text-meta">{product}</span>
-                                ))}
+                        <div className="container">
+                            <div
+                                className={`grid-cols-2`}
+                                style={{
+                                    gap: '4rem',
+                                    alignItems: 'center',
+                                    direction: index % 2 === 1 ? 'rtl' : 'ltr'
+                                }}
+                            >
+                                {/* Image Side */}
+                                <div style={{
+                                    height: '80vh',
+                                    overflow: 'hidden',
+                                    position: 'relative'
+                                }}>
+                                    <div className="story-img" style={{ width: '100%', height: '110%', position: 'absolute', top: -10 }}>
+                                        <img
+                                            src={story.image}
+                                            alt={story.title}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Content Side */}
+                                <div
+                                    className="story-content"
+                                    style={{
+                                        direction: 'ltr',
+                                        padding: '2rem'
+                                    }}
+                                >
+                                    <AnimatedText>
+                                        <span className="text-meta" style={{ color: 'var(--accent)' }}>0{index + 1} / STORY</span>
+                                    </AnimatedText>
+
+                                    <AnimatedText delay={0.2}>
+                                        <h2 className="text-display-lg font-serif" style={{ margin: '1rem 0' }}>{story.title}</h2>
+                                    </AnimatedText>
+
+                                    <AnimatedText delay={0.3}>
+                                        <p className="font-serif fst-italic text-body-lg" style={{ marginBottom: '2rem', opacity: 0.8 }}>"{story.subtitle}"</p>
+                                    </AnimatedText>
+
+                                    <AnimatedText delay={0.4}>
+                                        <p className="text-body-lg" style={{ color: 'var(--text-muted)', marginBottom: '3rem' }}>{story.description}</p>
+                                    </AnimatedText>
+
+                                    <div style={{ marginBottom: '3rem' }}>
+                                        {story.products.map((prod, i) => (
+                                            <span
+                                                key={i}
+                                                className="text-meta"
+                                                style={{
+                                                    display: 'inline-block',
+                                                    marginRight: '1rem',
+                                                    marginBottom: '0.5rem',
+                                                    border: '1px solid var(--border-light)',
+                                                    padding: '0.5rem 1rem'
+                                                }}
+                                            >
+                                                {prod}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <AnimatedText delay={0.5}>
+                                        <button className="text-meta hover-underline" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
+                                            Explore Narrative
+                                        </button>
+                                    </AnimatedText>
+                                </div>
                             </div>
-                            <button className="story-cta">Explore Collection</button>
                         </div>
                     </section>
                 ))}
             </div>
 
-            {/* Footer */}
-            <footer className="journal-footer">
-                <Link to="/" className="story-back-link text-meta">← Back to Home</Link>
-                <p className="text-meta">Designed by Aditi · Ayushkant · Umesh</p>
-            </footer>
-
+            <Footer />
         </div>
     );
 }

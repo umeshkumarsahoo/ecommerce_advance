@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-/**
- * Journal Section - "Editorial Stories"
- * 
- * Horizontal scroll showcasing product collections or campaigns.
- * Uses CSS variables for proper Dark/Light mode support.
- */
+gsap.registerPlugin(ScrollTrigger);
+
 const entries = [
     {
         id: 1,
@@ -37,132 +36,75 @@ const entries = [
     },
 ];
 
+/**
+ * Journal Section
+ * 
+ * Horizontal scrolling editorial list.
+ */
 const Journal = () => {
-    return (
-        <section
-            className="py-5"
-            style={{
-                backgroundColor: 'var(--bg-color)',
-                paddingTop: '15vh',
-                paddingBottom: '15vh'
-            }}
-        >
+    const scrollContainerRef = useRef(null);
 
-            {/* Section Header - Uses CSS Variables for Dark Mode */}
-            <div className="container-fluid px-4 px-md-5 mb-5">
-                <div className="row align-items-end">
-                    <div className="col-md-8">
-                        <span
-                            className="text-meta d-block mb-3"
-                            style={{ letterSpacing: '0.2em', color: 'var(--text-muted)' }}
-                        >
-                            EDITORIAL
-                        </span>
-                        <h2
-                            className="display-4 font-serif"
-                            style={{
-                                fontWeight: 400,
-                                fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-                                color: 'var(--text-main)'
-                            }}
-                        >
-                            Shop by<br className="d-md-none" /> Story
-                        </h2>
-                    </div>
-                    <div className="col-md-4 text-md-end d-none d-md-block">
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            Drag to explore →
-                        </span>
-                    </div>
+    return (
+        <section className="section" style={{ overflow: 'hidden' }}>
+            <div className="container flex-between" style={{ marginBottom: '4rem' }}>
+                <div>
+                    <span className="text-meta" style={{ display: 'block', marginBottom: '1rem' }}>EDITORIAL</span>
+                    <h2 className="text-display-md font-serif">Shop by Story</h2>
                 </div>
+                <div className="text-meta d-none d-md-block">Drag to explore &rarr;</div>
             </div>
 
-            {/* Horizontal Scroll Container */}
+            {/* Horizontal Scroll Area */}
             <div
-                className="d-flex gap-4 overflow-auto px-4 px-md-5 pb-4"
+                ref={scrollContainerRef}
+                className="journal-scroll"
                 style={{
-                    cursor: 'grab',
+                    display: 'flex',
+                    gap: '2vw',
+                    paddingLeft: 'var(--spacing-container)',
+                    paddingRight: 'var(--spacing-container)',
+                    overflowX: 'auto',
+                    paddingBottom: '2rem',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none'
                 }}
             >
                 {entries.map((item) => (
-                    <article
-                        key={item.id}
-                        className="flex-shrink-0"
-                        style={{ width: 'clamp(280px, 35vw, 380px)' }}
-                    >
-                        {/* Portrait Image (4:5 Ratio) */}
-                        <div
-                            className="overflow-hidden mb-4"
-                            style={{
-                                aspectRatio: '4/5',
-                                backgroundColor: 'var(--text-muted)'
-                            }}
-                        >
+                    <article key={item.id} style={{ minWidth: '350px', width: '30vw', position: 'relative' }}>
+                        <div style={{ aspectRatio: '3/4', overflow: 'hidden', marginBottom: '1.5rem', background: '#222' }}>
                             <img
                                 src={item.img}
                                 alt={item.title}
-                                className="w-100 h-100 object-fit-cover"
                                 style={{
-                                    transition: 'transform 0.8s cubic-bezier(0.19, 1, 0.22, 1)'
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transition: 'transform 0.6s ease'
                                 }}
-                                onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                                onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                                onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                                onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                             />
                         </div>
-
-                        {/* Card Info - Uses CSS Variables */}
-                        <div className="d-flex justify-content-between align-items-start">
+                        <div className="flex-between">
                             <div>
-                                <h3
-                                    className="h5 font-serif mb-1"
-                                    style={{ fontWeight: 400, color: 'var(--text-main)' }}
-                                >
-                                    {item.title}
-                                </h3>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                    {item.collection}
-                                </span>
+                                <h3 className="text-body-lg font-serif">{item.title}</h3>
+                                <span className="text-meta" style={{ fontSize: '0.7rem' }}>{item.collection}</span>
                             </div>
-                            <span
-                                className="text-meta"
-                                style={{ color: 'var(--text-muted)' }}
-                            >
-                                {item.season}
-                            </span>
+                            <span className="text-meta" style={{ opacity: 0.5 }}>{item.season}</span>
                         </div>
                     </article>
                 ))}
 
-                {/* View All Card */}
-                <div
-                    className="flex-shrink-0 d-flex align-items-center justify-content-center"
-                    style={{
-                        width: 'clamp(200px, 25vw, 280px)',
-                        aspectRatio: '4/5',
-                        border: '1px solid var(--text-main)'
-                    }}
-                >
-                    <a
-                        href="#"
-                        className="text-decoration-none text-center p-4"
-                        style={{ color: 'var(--text-main)' }}
-                    >
-                        <span className="d-block font-serif h4 mb-2">View All</span>
-                        <span className="text-meta" style={{ color: 'var(--text-muted)' }}>
-                            Stories →
-                        </span>
-                    </a>
+                {/* View All Link at end of scroll */}
+                <div style={{ minWidth: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-light)' }}>
+                    <Link to="/stories" className="text-meta hover-underline">
+                        View All Stories
+                    </Link>
                 </div>
-
-                {/* End Spacer */}
-                <div style={{ minWidth: '5vw' }}></div>
             </div>
-
             <style>{`
-        div::-webkit-scrollbar { display: none; }
-      `}</style>
+                .journal-scroll::-webkit-scrollbar { display: none; }
+            `}</style>
         </section>
     );
 };

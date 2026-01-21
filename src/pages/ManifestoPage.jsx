@@ -1,141 +1,83 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import AnimatedText from '../components/AnimatedText';
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
  * ManifestoPage - The Brand Philosophy
  * 
- * Ultra-minimal, typographic, cinematic experience.
- * Dark mode default. Slow motion. High contrast.
+ * Cinematic typography.
  */
 function ManifestoPage() {
     const containerRef = useRef(null);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // 1. Entrance Sequence
-            const tl = gsap.timeline();
-
-            tl.to('.manifesto-intro-word', {
-                opacity: 1,
-                y: 0,
-                duration: 2,
-                stagger: 0.4,
-                ease: 'power3.out'
-            })
-                .to('.scroll-hint', {
-                    opacity: 0.5,
-                    duration: 1,
-                    delay: 0.5
-                });
-
-            // 2. Scroll Sections - Text Reveal
-            gsap.utils.toArray('.manifesto-section').forEach((section) => {
-                const text = section.querySelector('.manifesto-text');
-
+            gsap.utils.toArray('.manifesto-highlight').forEach((text) => {
                 gsap.fromTo(text,
-                    {
-                        opacity: 0,
-                        y: 50,
-                        filter: 'blur(10px)'
-                    },
+                    { opacity: 0.2 },
                     {
                         opacity: 1,
-                        y: 0,
-                        filter: 'blur(0px)',
-                        duration: 1.5,
-                        ease: 'power2.out',
+                        duration: 1,
                         scrollTrigger: {
-                            trigger: section,
-                            start: 'top 70%',
-                            toggleActions: 'play none none reverse'
+                            trigger: text,
+                            start: 'top 60%',
+                            end: 'top 40%',
+                            scrub: true
                         }
                     }
                 );
             });
-
-            // 3. Signature
-            gsap.fromTo('.manifesto-signature',
-                { opacity: 0, scale: 0.9 },
-                {
-                    opacity: 1,
-                    scale: 1,
-                    duration: 2,
-                    scrollTrigger: {
-                        trigger: '.manifesto-footer',
-                        start: 'top 80%'
-                    }
-                }
-            );
-
         }, containerRef);
-
         return () => ctx.revert();
     }, []);
 
     return (
-        <div className="manifesto-page" ref={containerRef}>
+        <div ref={containerRef} style={{ background: '#000', color: '#fff', minHeight: '100vh', paddingTop: '100px' }}>
+            <Navbar />
 
-            {/* Navigation - Minimal */}
-            <nav className="manifesto-nav">
-                <Link to="/" className="manifesto-close">✕ CLOSE</Link>
-            </nav>
-
-            {/* Hero / Entrance */}
-            <section className="manifesto-hero">
-                <div className="manifesto-title-container">
-                    <span className="manifesto-intro-word font-serif">Silence.</span>
-                    <span className="manifesto-intro-word font-serif">Time.</span>
-                    <span className="manifesto-intro-word font-serif">Essence.</span>
+            <div className="container section">
+                <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <AnimatedText delay={0.5}>
+                        <h1 className="text-display-xl font-serif">Silence.</h1>
+                    </AnimatedText>
+                    <AnimatedText delay={0.7}>
+                        <h1 className="text-display-xl font-serif" style={{ marginLeft: '10vw' }}>Time.</h1>
+                    </AnimatedText>
+                    <AnimatedText delay={0.9}>
+                        <h1 className="text-display-xl font-serif" style={{ marginLeft: '20vw' }}>Essence.</h1>
+                    </AnimatedText>
                 </div>
-                <div className="scroll-hint">Scroll to read</div>
-            </section>
 
-            {/* Content Sections */}
-            <div className="manifesto-content">
+                <div style={{ maxWidth: '800px', margin: '20vh auto', textAlign: 'left' }}>
+                    <div className="mb-5 pb-5">
+                        <span className="text-meta" style={{ color: 'var(--accent)', display: 'block', marginBottom: '2rem' }}>01. THE NOISE</span>
+                        <h2 className="text-display-md font-serif manifesto-highlight">
+                            The world is too loud. It demands your attention, but offers nothing in return.
+                        </h2>
+                    </div>
 
-                {/* Section 1: Noise */}
-                <section className="manifesto-section">
-                    <p className="manifesto-label text-meta">01. THE NOISE</p>
-                    <h2 className="manifesto-text font-serif">
-                        The world is too loud.<br />
-                        It demands your attention,<br />
-                        but offers nothing in return.
-                    </h2>
-                </section>
+                    <div className="mb-5 pb-5">
+                        <span className="text-meta" style={{ color: 'var(--accent)', display: 'block', marginBottom: '2rem' }}>02. THE SILENCE</span>
+                        <h2 className="text-display-md font-serif manifesto-highlight">
+                            We design for the pause. The quiet moment between thoughts. Where true luxury resides.
+                        </h2>
+                    </div>
 
-                {/* Section 2: Silence */}
-                <section className="manifesto-section">
-                    <p className="manifesto-label text-meta">02. THE SILENCE</p>
-                    <h2 className="manifesto-text font-serif">
-                        We design for the pause.<br />
-                        The quiet moment between thoughts.<br />
-                        Where true luxury resides.
-                    </h2>
-                </section>
-
-                {/* Section 3: Object */}
-                <section className="manifesto-section">
-                    <p className="manifesto-label text-meta">03. THE OBJECT</p>
-                    <h2 className="manifesto-text font-serif">
-                        Not just a garment.<br />
-                        But an architecture for the body.<br />
-                        Built to last, designed to fade<br />
-                        into your life, not from it.
-                    </h2>
-                </section>
-
+                    <div className="mb-5 pb-5">
+                        <span className="text-meta" style={{ color: 'var(--accent)', display: 'block', marginBottom: '2rem' }}>03. THE OBJECT</span>
+                        <h2 className="text-display-md font-serif manifesto-highlight">
+                            Not just a garment. But an architecture for the body. Built to last, designed to fade into your life, not from it.
+                        </h2>
+                    </div>
+                </div>
             </div>
 
-            {/* Footer */}
-            <footer className="manifesto-footer">
-                <div className="manifesto-signature font-serif">BECANÉ.</div>
-                <p className="manifesto-credits text-meta">EST. 2026</p>
-            </footer>
-
+            <Footer />
         </div>
     );
 }
