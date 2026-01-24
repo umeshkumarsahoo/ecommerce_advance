@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import AnimatedText from '../components/AnimatedText';
+import LuxuryButton from '../components/LuxuryButton';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -49,14 +49,12 @@ function ShopByStoryPage() {
         const ctx = gsap.context(() => {
             gsap.utils.toArray('.story-section').forEach((section, i) => {
                 const img = section.querySelector('.story-img');
-                const content = section.querySelector('.story-content');
 
                 // Parallax for image
                 gsap.fromTo(img,
-                    { yPercent: -10, scale: 1.1 },
+                    { scale: 1.1 },
                     {
-                        yPercent: 10,
-                        scale: 1.1,
+                        scale: 1,
                         ease: 'none',
                         scrollTrigger: {
                             trigger: section,
@@ -72,106 +70,84 @@ function ShopByStoryPage() {
     }, []);
 
     return (
-        <div ref={pageRef} style={{ background: 'var(--bg-color)', minHeight: '100vh', paddingTop: '100px' }}>
-            <Navbar />
+        <div ref={pageRef} style={{ paddingTop: '100px', minHeight: '100vh' }}>
 
-            <div className="container" style={{ textAlign: 'center', padding: '10vh 0' }}>
+            {/* Header */}
+            <div className="container text-center" style={{ padding: '10vh 0' }}>
                 <AnimatedText>
-                    <h1 className="text-display-xl font-serif">Narratives</h1>
+                    <span className="text-caption text-accent" style={{ display: 'block', marginBottom: '1rem' }}>
+                        CURATED WORLDS
+                    </span>
                 </AnimatedText>
                 <AnimatedText delay={0.2}>
-                    <p className="text-body-lg" style={{ color: 'var(--text-muted)', marginTop: '2rem' }}>
-                        Curated worlds defining our aesthetic.
+                    <h1 className="text-hero" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>Narratives</h1>
+                </AnimatedText>
+                <AnimatedText delay={0.4}>
+                    <p className="text-body-lg" style={{ marginTop: '2rem', maxWidth: '500px', marginInline: 'auto' }}>
+                        Each collection tells a story. Discover the inspiration behind the pieces.
                     </p>
                 </AnimatedText>
             </div>
 
+            {/* Stories Loop */}
             <div className="stories-container">
                 {stories.map((story, index) => (
                     <section
                         key={story.id}
                         className="story-section section"
-                        style={{ padding: '0 0 10vh 0' }}
                     >
                         <div className="container">
-                            <div
-                                className={`grid-cols-2`}
-                                style={{
-                                    gap: '4rem',
-                                    alignItems: 'center',
-                                    direction: index % 2 === 1 ? 'rtl' : 'ltr'
-                                }}
-                            >
-                                {/* Image Side */}
+                            <div className="grid-2" style={{ alignItems: 'center', gap: '5rem' }}>
+
+                                {/* Image Side - Alternating Order */}
                                 <div style={{
-                                    height: '80vh',
+                                    order: index % 2 === 1 ? 2 : 1,
+                                    aspectRatio: '4/5',
                                     overflow: 'hidden',
                                     position: 'relative'
                                 }}>
-                                    <div className="story-img" style={{ width: '100%', height: '110%', position: 'absolute', top: -10 }}>
-                                        <img
-                                            src={story.image}
-                                            alt={story.title}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                    </div>
+                                    <img
+                                        src={story.image}
+                                        alt={story.title}
+                                        className="story-img"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
                                 </div>
 
                                 {/* Content Side */}
-                                <div
-                                    className="story-content"
-                                    style={{
-                                        direction: 'ltr',
-                                        padding: '2rem'
-                                    }}
-                                >
+                                <div style={{
+                                    order: index % 2 === 1 ? 1 : 2,
+                                    paddingLeft: index % 2 === 1 ? '0' : '2rem',
+                                    paddingRight: index % 2 === 1 ? '2rem' : '0'
+                                }}>
                                     <AnimatedText>
-                                        <span className="text-meta" style={{ color: 'var(--accent)' }}>0{index + 1} / STORY</span>
+                                        <span className="text-caption" style={{ display: 'block', marginBottom: '1rem' }}>0{index + 1}</span>
                                     </AnimatedText>
-
                                     <AnimatedText delay={0.2}>
-                                        <h2 className="text-display-lg font-serif" style={{ margin: '1rem 0' }}>{story.title}</h2>
+                                        <h2 className="text-h2" style={{ marginBottom: '0.5rem' }}>{story.title}</h2>
                                     </AnimatedText>
-
                                     <AnimatedText delay={0.3}>
-                                        <p className="font-serif fst-italic text-body-lg" style={{ marginBottom: '2rem', opacity: 0.8 }}>"{story.subtitle}"</p>
+                                        <h3 className="text-body-lg" style={{ fontStyle: 'italic', marginBottom: '2rem', color: 'var(--color-text-muted)' }}>{story.subtitle}</h3>
                                     </AnimatedText>
-
                                     <AnimatedText delay={0.4}>
-                                        <p className="text-body-lg" style={{ color: 'var(--text-muted)', marginBottom: '3rem' }}>{story.description}</p>
+                                        <p className="text-body-lg" style={{ marginBottom: '2.5rem' }}>
+                                            {story.description}
+                                        </p>
                                     </AnimatedText>
 
-                                    <div style={{ marginBottom: '3rem' }}>
-                                        {story.products.map((prod, i) => (
-                                            <span
-                                                key={i}
-                                                className="text-meta"
-                                                style={{
-                                                    display: 'inline-block',
-                                                    marginRight: '1rem',
-                                                    marginBottom: '0.5rem',
-                                                    border: '1px solid var(--border-light)',
-                                                    padding: '0.5rem 1rem'
-                                                }}
-                                            >
-                                                {prod}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    <AnimatedText delay={0.5}>
-                                        <button className="text-meta hover-underline" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
-                                            Explore Narrative
-                                        </button>
+                                    <AnimatedText delay={0.6}>
+                                        <Link to={`/stories/${story.id}`}>
+                                            <LuxuryButton>Explore Narrative</LuxuryButton>
+                                        </Link>
                                     </AnimatedText>
                                 </div>
+
                             </div>
                         </div>
                     </section>
                 ))}
             </div>
 
-            <Footer />
         </div>
     );
 }

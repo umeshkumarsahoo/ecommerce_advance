@@ -1,27 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
+import { useAuth } from '../context/AuthContext';
+import LuxuryButton from '../components/LuxuryButton';
 
 /**
- * LoginPage Component
- * Premium luxury login experience with split-screen layout
+ * LoginPage - Premium luxury login with hardcoded credentials
+ * 
+ * Credentials: username: "od", password: "password"
  */
 function LoginPage() {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [formData, setFormData] = useState({ username: '', password: '' });
+    const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const { login, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+
     const containerRef = useRef(null);
-    const imageRef = useRef(null);
-    const formRef = useRef(null);
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/dashboard');
+        }
+    }, [isAuthenticated, navigate]);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Initial states
             gsap.set('.login-image-side', { clipPath: 'inset(0 100% 0 0)' });
             gsap.set('.login-form-container', { opacity: 0, y: 40 });
             gsap.set('.login-brand', { opacity: 0, y: -20 });
 
-            // Entrance animation timeline
             const tl = gsap.timeline({ delay: 0.2 });
 
             tl.to('.login-image-side', {
@@ -48,53 +58,100 @@ function LoginPage() {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(''); // Clear error on input
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate login - replace with actual auth logic
+        setError('');
+
+        // Simulate network delay
         setTimeout(() => {
+            const result = login(formData.username, formData.password);
             setIsLoading(false);
-            alert('Login functionality not yet implemented');
-        }, 1500);
+
+            if (result.success) {
+                // Animate out and navigate
+                gsap.to('.login-page', {
+                    opacity: 0,
+                    duration: 0.5,
+                    onComplete: () => navigate('/dashboard')
+                });
+            } else {
+                setError(result.error);
+                // Shake animation on error
+                gsap.to('.login-form-container', {
+                    x: [-10, 10, -10, 10, 0],
+                    duration: 0.4,
+                    ease: 'power2.out'
+                });
+            }
+        }, 800);
     };
 
     return (
         <div className="login-page" ref={containerRef}>
             {/* Left Side - Image */}
-            <div className="login-image-side" ref={imageRef}>
-                <div className="login-image-overlay"></div>
+            <div
+                className="login-image-side"
+                style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=2069&auto=format&fit=crop)'
+                }}
+            >
+                <div className="login-image-overlay" />
                 <div className="login-image-content">
-                    <h2 className="font-serif">Experience<br />Luxury</h2>
-                    <p className="text-meta">Curated Collections • Timeless Elegance</p>
+                    <h2 className="font-serif">
+                        Experience<br />
+                        <span style={{ fontStyle: 'italic', color: 'var(--color-accent)' }}>Luxury</span>
+                    </h2>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', letterSpacing: '0.1em' }}>
+                        Curated Collections • Timeless Elegance
+                    </p>
                 </div>
             </div>
 
             {/* Right Side - Form */}
-            <div className="login-form-side" ref={formRef}>
+            <div className="login-form-side">
                 <Link to="/" className="login-brand font-serif">
-                    BECANÉ.
+                    Lumiére
                 </Link>
 
                 <div className="login-form-container">
                     <div className="login-header">
                         <h1 className="display-lg font-serif">Welcome Back</h1>
-                        <p className="login-subtitle">Sign in to your account</p>
+                        <p className="login-subtitle">Sign in to your exclusive account</p>
                     </div>
+
+                    {/* Error Message */}
+                    {error && (
+                        <div
+                            style={{
+                                background: 'rgba(220, 38, 38, 0.1)',
+                                border: '1px solid rgba(220, 38, 38, 0.3)',
+                                color: '#ef4444',
+                                padding: '1rem',
+                                borderRadius: '4px',
+                                marginBottom: '1.5rem',
+                                fontSize: '0.85rem'
+                            }}
+                        >
+                            {error}
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="login-form">
                         <div className="form-group">
-                            <label htmlFor="email" className="text-meta">Email Address</label>
+                            <label htmlFor="username" className="text-meta">Username</label>
                             <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
+                                type="text"
+                                id="username"
+                                name="username"
+                                value={formData.username}
                                 onChange={handleChange}
-                                placeholder="your@email.com"
+                                placeholder="Enter your username"
                                 required
-                                autoComplete="email"
+                                autoComplete="username"
                             />
                         </div>
 
@@ -120,33 +177,38 @@ function LoginPage() {
                             <Link to="/forgot-password" className="forgot-link">Forgot password?</Link>
                         </div>
 
-                        <button
+                        <LuxuryButton
                             type="submit"
-                            className="login-btn"
                             disabled={isLoading}
+                            style={{ width: '100%', marginTop: '1rem' }}
                         >
-                            {isLoading ? (
-                                <span className="btn-loading"></span>
-                            ) : (
-                                'Sign In'
-                            )}
-                        </button>
+                            {isLoading ? 'Signing In...' : 'Sign In'}
+                        </LuxuryButton>
                     </form>
+
+                    {/* Demo Credentials Hint */}
+                    <div
+                        style={{
+                            marginTop: '1.5rem',
+                            padding: '1rem',
+                            background: 'rgba(212, 175, 55, 0.1)',
+                            border: '1px solid rgba(212, 175, 55, 0.2)',
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
+                            color: 'var(--color-accent)'
+                        }}
+                    >
+                        <strong>Demo:</strong> Use <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>od</code> / <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>password</code>
+                    </div>
 
                     <div className="login-divider">
                         <span>or</span>
                     </div>
 
                     <div className="social-login">
-                        <button className="social-btn google">
-                            <svg viewBox="0 0 24 24" width="20" height="20">
-                                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                            </svg>
+                        <LuxuryButton style={{ width: '100%', background: 'rgba(255,255,255,0.05)' }}>
                             Continue with Google
-                        </button>
+                        </LuxuryButton>
                     </div>
 
                     <p className="signup-link">
@@ -154,8 +216,8 @@ function LoginPage() {
                     </p>
                 </div>
 
-                <p className="login-footer text-meta">
-                    © 2026 BECANÉ. All rights reserved.
+                <p className="login-footer">
+                    © 2026 Lumiére. All rights reserved.
                 </p>
             </div>
         </div>

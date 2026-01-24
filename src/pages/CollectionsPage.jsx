@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import { Link } from 'react-router-dom';
 import AnimatedText from '../components/AnimatedText';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -33,7 +32,7 @@ function CollectionsPage() {
                         delay: i * 0.05,
                         scrollTrigger: {
                             trigger: item,
-                            start: 'top 85%'
+                            start: 'top 90%'
                         }
                     }
                 );
@@ -43,49 +42,40 @@ function CollectionsPage() {
     }, []);
 
     return (
-        <div ref={pageRef} style={{ background: 'var(--bg-color)', minHeight: '100vh', paddingTop: '100px' }}>
-            <Navbar />
+        <div ref={pageRef} style={{ paddingTop: '100px', minHeight: '100vh' }}>
 
             <div className="container section">
                 <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
                     <AnimatedText>
-                        <h1 className="text-display-lg font-serif">Spring / Summer 2026</h1>
+                        <h1 className="text-h1">Spring / Summer 2026</h1>
                     </AnimatedText>
                     <AnimatedText delay={0.2}>
-                        <p className="text-body-lg" style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '1rem auto' }}>
+                        <p className="text-body-lg" style={{ maxWidth: '600px', margin: '2rem auto' }}>
                             A study in kinetics and silence. Pieces designed to move with you, fading into the rhythm of your life.
                         </p>
                     </AnimatedText>
                 </div>
 
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '4rem 2rem'
-                    }}
-                >
+                <div className="grid-4">
                     {products.map((p) => (
-                        <div key={p.id} className="collection-item" style={{ cursor: 'pointer' }}>
-                            <div style={{ position: 'relative', overflow: 'hidden', aspectRatio: '3/4', marginBottom: '1rem' }}>
+                        <Link to={`/product/${p.id}`} key={p.id} className="collection-item product-card" style={{ display: 'block' }}>
+                            <div className="card-image-wrap">
                                 <img
                                     src={p.img}
                                     alt={p.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                                    onMouseEnter={e => e.target.style.transform = 'scale(1.05)'}
-                                    onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+                                    className="card-image"
                                 />
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.05)' }}></div>
                             </div>
-                            <div className="flex-between">
-                                <h3 className="text-body-lg font-serif">{p.name}</h3>
-                                <span className="text-meta">{p.price}</span>
+                            <div className="card-info">
+                                <h3 className="text-body-lg" style={{ color: '#fff' }}>{p.name}</h3>
+                                <span className="text-caption">{p.price}</span>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 }

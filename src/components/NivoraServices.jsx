@@ -1,0 +1,103 @@
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+/**
+ * NivoraServices - Hybrid Horizontal Scroll
+ * 
+ * Mixes old "FeaturedSection" layout ideas with Nivora's 
+ * horizontal categorization and icon aesthetics.
+ */
+const NivoraServices = () => {
+    const sectionRef = useRef(null);
+    const trackRef = useRef(null);
+
+    const services = [
+        { id: 1, label: "Product Design", icon: "✦" },
+        { id: 2, label: "Art Direction", icon: "✸" },
+        { id: 3, label: "Development", icon: "⚡" },
+        { id: 4, label: "Photography", icon: "◎" },
+        { id: 5, label: "Brand Identity", icon: "⌘" },
+        { id: 6, label: "Strategy", icon: "✣" }
+    ];
+
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            // Horizontal scroll animation
+            gsap.to(trackRef.current, {
+                xPercent: -50,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: 0.5
+                }
+            });
+        }, sectionRef);
+
+        return () => ctx.revert();
+    }, []);
+
+    return (
+        <section ref={sectionRef} className="section services-section overflow-hidden">
+            <div className="services-track" ref={trackRef}>
+                {/* Double the list for seamless loop illusion if needed, 
+                    but here simple scroll is fine for "mind bending" speed */}
+                {[...services, ...services].map((item, index) => (
+                    <div key={`${item.id}-${index}`} className="service-item">
+                        <span className="service-icon">{item.icon}</span>
+                        <span className="service-label">{item.label}</span>
+                    </div>
+                ))}
+            </div>
+
+            <style>{`
+                .services-section {
+                    padding: 8rem 0;
+                    border-top: 1px solid var(--border-light);
+                    border-bottom: 1px solid var(--border-light);
+                    background: var(--bg-secondary);
+                }
+
+                .services-track {
+                    display: flex;
+                    gap: 6rem;
+                    width: max-content;
+                    padding-left: 5vw;
+                }
+
+                .service-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 1.5rem;
+                    opacity: 0.5;
+                    transition: opacity 0.3s ease;
+                    cursor: default;
+                }
+
+                .service-item:hover {
+                    opacity: 1;
+                }
+
+                .service-icon {
+                    font-size: 2rem;
+                    color: var(--accent);
+                }
+
+                .service-label {
+                    font-family: var(--font-display);
+                    font-size: clamp(2rem, 5vw, 4rem);
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    color: var(--text-primary);
+                    white-space: nowrap;
+                }
+            `}</style>
+        </section>
+    );
+};
+
+export default NivoraServices;

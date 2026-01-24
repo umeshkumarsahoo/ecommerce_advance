@@ -1,57 +1,83 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import gsap from 'gsap';
 
 const Preloader = ({ onComplete }) => {
-    const containerRef = useRef(null);
-    const textRef = useRef(null);
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
-        const tl = gsap.timeline();
+        // OPTIMIZATION: Sped up interval to 30ms (from 100ms) for faster loading percepion
+        const timer = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 100) {
+                    clearInterval(timer);
+                    return 100;
+                }
+                // Random increment increased to 5-15% per tick
+                return prev + Math.floor(Math.random() * 10) + 5;
+            });
+        }, 30); // Much faster ticks
 
-        tl.to(textRef.current, {
-            opacity: 1,
-            duration: 1.5,
-            ease: 'power2.out'
-        })
-            .to(textRef.current, {
-                opacity: 0,
-                duration: 1,
-                delay: 0.5,
-                ease: 'power2.in'
-            })
-            .to(containerRef.current, {
-                yPercent: -100,
-                duration: 1.2,
-                ease: 'power4.inOut',
+        return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        if (progress >= 100) {
+            // Exit animation
+            const tl = gsap.timeline({
                 onComplete: onComplete
             });
 
-        return () => tl.kill();
-    }, [onComplete]);
+            tl.to('.preloader-percent', {
+                opacity: 0,
+                y: -20,
+                duration: 0.4, // Faster exit
+                ease: 'power2.in'
+            })
+                .to('.preloader-bar', {
+                    width: '100vw',
+                    height: '100vh',
+                    duration: 0.6, // Faster fill
+                    ease: 'power4.inOut'
+                })
+                .to('.preloader', {
+                    yPercent: -100,
+                    duration: 0.6, // Faster slide out
+                    ease: 'power4.inOut'
+                }, '-=0.4');
+        }
+    }, [progress, onComplete]);
 
     return (
-        <div
-            ref={containerRef}
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100vh',
-                backgroundColor: '#050505',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-            }}
-        >
-            <h1
-                ref={textRef}
-                className="font-serif text-display-md"
-                style={{ color: '#fff', opacity: 0, letterSpacing: '0.1em' }}
-            >
-                BECANÉ.
-            </h1>
+        <div className="preloader">
+            <div className="preloader-content">
+                <div className="preloader-percent">
+                    {Math.min(progress, 100)}%
+                </div>
+                <div className="preloader-text">
+                    BECANÉ
+                </div>
+            </div>
+
+            <div className="preloader-line">
+                <div
+                    className="preloader-fill"
+                    style={{ width: `${progress}%` }}
+                ></div>
+            </div>
+
+            <style>{`
+                .preloader {
+                    position: fixed; inset: 0; background-color: #000; z-index: 9999;
+                    display: flex; align-items: center; justify-content: center; color: #fff;
+                }
+                .preloader-content { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+                .preloader-percent { font-family: 'Instrument Sans', sans-serif; font-size: 8rem; font-weight: 700; line-height: 1; }
+                .preloader-text {
+                    font-family: 'Inter', sans-serif; letter-spacing: 0.5em; font-size: 0.875rem; text-transform: uppercase; opacity: 0.5;
+                }
+                .preloader-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.1); }
+                .preloader-fill { height: 100%; background: #B1DD34; transition: width 0.1s ease-out; }
+            `}</style>
         </div>
     );
 };
