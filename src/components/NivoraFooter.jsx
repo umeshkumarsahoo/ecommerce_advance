@@ -25,8 +25,8 @@ const NivoraFooter = () => {
                     <div>
                         <h4 className="footer-heading">Contact</h4>
                         <a href="mailto:hello@becane.com" className="footer-link">hello@becane.com</a>
-                        <a href="tel:+33123456789" className="footer-link">+33 1 23 45 67 89</a>
-                        <p className="footer-link mt-4">12 Rue du Faubourg<br />75008 Paris, France</p>
+                        <a href="tel:+91123456789" className="footer-link">+91 3564674883</a>
+                        <p className="footer-link mt-4">12 Bhubaneswar Odisha <br />75008 India,Paris, France</p>
                     </div>
 
                     {/* Column 3 */}
@@ -42,10 +42,10 @@ const NivoraFooter = () => {
             {/* Massive Ticker */}
             <div className="footer-ticker">
                 <div className="ticker-content">
-                    <span className="ticker-text">BECANÉ &mdash; LUXURY REDEFINED</span>
-                    <span className="ticker-text">BECANÉ &mdash; LUXURY REDEFINED</span>
-                    <span className="ticker-text">BECANÉ &mdash; LUXURY REDEFINED</span>
-                    <span className="ticker-text">BECANÉ &mdash; LUXURY REDEFINED</span>
+                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
+                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
+                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
+                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
                 </div>
             </div>
 

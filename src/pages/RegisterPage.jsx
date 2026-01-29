@@ -77,9 +77,9 @@ function RegisterPage() {
 
             {/* Right Side - Form */}
             <div className="login-form-side">
-                <Link to="/" className="login-brand font-serif">
+                {/* <Link to="/" className="login-brand font-serif">
                     BECANÉ
-                </Link>
+                </Link> */}
 
                 <div className="login-form-container">
                     <div className="login-header">

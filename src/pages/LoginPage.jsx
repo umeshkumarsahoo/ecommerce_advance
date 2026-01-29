@@ -113,9 +113,7 @@ function LoginPage() {
 
             {/* Right Side - Form */}
             <div className="login-form-side">
-                <Link to="/" className="login-brand font-serif">
-                    Lumiére
-                </Link>
+
 
                 <div className="login-form-container">
                     <div className="login-header">
@@ -217,7 +215,7 @@ function LoginPage() {
                 </div>
 
                 <p className="login-footer">
-                    © 2026 Lumiére. All rights reserved.
+                    © 2026 Becane. All rights reserved.
                 </p>
             </div>
         </div>

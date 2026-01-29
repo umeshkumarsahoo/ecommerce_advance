@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 // Local Asset
-import heroImg from '../assets/images/hero-main.jpg';
+import heroVideo from '../assets/images/hero.mp4';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -59,11 +59,13 @@ const NivoraHero = () => {
         <section ref={heroRef} className="nivora-hero">
             <div className="hero-bg">
                 <div className="hero-img-inner">
-                    <img
-                        src={heroImg}
-                        alt="Luxury Fashion"
+                    <video
+                        src={heroVideo}
                         className="hero-image"
-                        fetchPriority="high"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
                     />
                 </div>
                 <div className="hero-overlay"></div>
@@ -71,7 +73,7 @@ const NivoraHero = () => {
 
             <div className="hero-content container">
                 <div className="hero-top">
-                    <p className="hero-eyebrow">Estd. 2024 — Paris, France</p>
+                    <p className="hero-eyebrow">Estd. 2024 — India, Paris, France</p>
                 </div>
 
                 <div className="hero-title">
@@ -103,7 +105,7 @@ const NivoraHero = () => {
                     width: 100%; height: 115%; position: absolute; top: 0; left: 0;
                     will-change: transform; 
                 }
-                .hero-image { width: 100%; height: 100%; object-fit: cover; }
+                .hero-image { width: 100%; height: 90%; object-fit: cover; }
                 .hero-overlay {
                     position: absolute; inset: 0;
                     background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
