@@ -13,7 +13,6 @@ import NivoraShowcase from '../components/NivoraShowcase';
 import NivoraTeam from '../components/NivoraTeam';
 import NivoraTestimonials from '../components/NivoraTestimonials';
 import NivoraFAQ from '../components/NivoraFAQ';
-import BlobCursor from '../components/BlobCursor'; // RESTORED
 
 /**
  * HomePage - The Hybrid Luxury Experience
@@ -31,9 +30,6 @@ const HomePage = () => {
     return (
         <div ref={pageRef} className="home-page" style={{ opacity: 0 }}>
             <div className="edge-vignette"></div>
-
-            {/* RESTORED: User requested this logic back */}
-            <BlobCursor blobCount={3} blobColor="rgba(177, 221, 52, 0.4)" sizes={[60, 40, 20]} />
 
             <main>
                 <NivoraHero />

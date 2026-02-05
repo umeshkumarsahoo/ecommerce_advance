@@ -76,7 +76,7 @@ const Preloader = ({ onComplete }) => {
                     font-family: 'Inter', sans-serif; letter-spacing: 0.5em; font-size: 0.875rem; text-transform: uppercase; opacity: 0.5;
                 }
                 .preloader-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.1); }
-                .preloader-fill { height: 100%; background: #B1DD34; transition: width 0.1s ease-out; }
+                .preloader-fill { height: 100%; background: #D4AF37; transition: width 0.1s ease-out; }
             `}</style>
         </div>
     );

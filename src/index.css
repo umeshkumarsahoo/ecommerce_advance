@@ -16,15 +16,15 @@
   --text-secondary: #CCCCCC;
   --text-muted: #888888;
 
-  --accent: #B1DD34;
-  --accent-hover: #C5E85C;
-  --accent-dark: #8FB82A;
+  --accent: #D4AF37;
+  --accent-hover: #E5C453;
+  --accent-dark: #B8962E;
 
   --overlay-blue: rgba(0, 0, 255, 0.15);
   --overlay-dark: rgba(0, 0, 0, 0.6);
 
   --border-light: rgba(255, 255, 255, 0.1);
-  --border-accent: rgba(177, 221, 52, 0.3);
+  --border-accent: rgba(212, 175, 55, 0.3);
 
   /* --- TYPOGRAPHY --- */
   --font-display: 'Instrument Sans', sans-serif;

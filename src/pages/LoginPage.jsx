@@ -10,7 +10,7 @@ import LuxuryButton from '../components/LuxuryButton';
  * Credentials: username: "od", password: "password"
  */
 function LoginPage() {
-    const [formData, setFormData] = useState({ username: '', password: '' });
+    const [formData, setFormData] = useState({ username: '', mobile: '', password: '' });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -63,6 +63,14 @@ function LoginPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Mobile number validation: exactly 10 digits using regex
+        const mobileRegex = /^[0-9]{10}$/;
+        if (!mobileRegex.test(formData.mobile)) {
+            setError('Please enter a valid 10-digit mobile number');
+            return;
+        }
+
         setIsLoading(true);
         setError('');
 
@@ -154,6 +162,20 @@ function LoginPage() {
                         </div>
 
                         <div className="form-group">
+                            <label htmlFor="mobile" className="text-meta">Mobile Number</label>
+                            <input
+                                type="tel"
+                                id="mobile"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleChange}
+                                placeholder="10-digit mobile number"
+                                required
+                                autoComplete="tel"
+                            />
+                        </div>
+
+                        <div className="form-group">
                             <label htmlFor="password" className="text-meta">Password</label>
                             <input
                                 type="password"
@@ -184,7 +206,7 @@ function LoginPage() {
                         </LuxuryButton>
                     </form>
 
-                    {/* Demo Credentials Hint */}
+                    {/* Demo Credentials Hint - Shows both VIP and non-VIP options */}
                     <div
                         style={{
                             marginTop: '1.5rem',
@@ -193,10 +215,26 @@ function LoginPage() {
                             border: '1px solid rgba(212, 175, 55, 0.2)',
                             borderRadius: '4px',
                             fontSize: '0.75rem',
-                            color: 'var(--color-accent)'
+                            color: 'var(--accent)'
                         }}
                     >
-                        <strong>Demo:</strong> Use <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>od</code> / <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>password</code>
+                        <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Demo Credentials:</strong>
+
+                        {/* VIP User */}
+                        <div style={{ marginBottom: '0.5rem' }}>
+                            <span style={{ color: 'var(--accent)' }}>★ VIP:</span>{' '}
+                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>vip</code>
+                            {' / '}
+                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>vip123</code>
+                        </div>
+
+                        {/* Standard User */}
+                        <div>
+                            <span style={{ color: 'var(--text-muted)' }}>● Standard:</span>{' '}
+                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>user</code>
+                            {' / '}
+                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>user123</code>
+                        </div>
                     </div>
 
                     <div className="login-divider">

@@ -8,10 +8,14 @@ import gsap from 'gsap';
  * LAYOUT FIX:
  * - "HOME getting cropped from top" - Adjusted vertical centering and padding.
  * - Reduced initial y-offset in entry animation to prevent clipping during transition.
+ * 
+ * SUBMENU FEATURE:
+ * - Collection item has a submenu with categories
  */
 const NivoraNav = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [activeSubmenu, setActiveSubmenu] = useState(null);
 
     useEffect(() => {
         let ticking = false;
@@ -51,17 +55,34 @@ const NivoraNav = () => {
                 duration: 0.5,
                 ease: 'power3.inOut'
             });
+            setActiveSubmenu(null); // Close submenu when menu closes
         }
     }, [menuOpen]);
 
+    // Menu items with submenu support
     const menuItems = [
         { label: 'Home', path: '/' },
-        { label: 'Collection', path: '/collections' },
+        {
+            label: 'Collection',
+            path: '/collections',
+            submenu: [
+                { label: 'New Arrivals', path: '/collections?category=new' },
+                { label: 'Jewelry', path: '/collections?category=jewelry' },
+                { label: 'Accessories', path: '/collections?category=accessories' },
+                { label: 'Sale', path: '/collections?category=sale' }
+            ]
+        },
         { label: 'Editorial', path: '/journal' },
         { label: 'About', path: '/stories' },
         { label: 'Contact', path: '/contact' },
         { label: 'Login', path: '/login' }
     ];
+
+    // Toggle submenu
+    const handleSubmenuToggle = (index, e) => {
+        e.preventDefault();
+        setActiveSubmenu(activeSubmenu === index ? null : index);
+    };
 
     return (
         <>
@@ -86,15 +107,41 @@ const NivoraNav = () => {
                 <div className="menu-inner-scroll">
                     <div className="menu-container">
                         {menuItems.map((item, index) => (
-                            <Link
-                                key={index}
-                                to={item.path}
-                                className="menu-item"
-                                onClick={() => setMenuOpen(false)}
-                            >
-                                <span className="menu-item-text">{item.label}</span>
-                                <span className="menu-item-number">0{index + 1}</span>
-                            </Link>
+                            <div key={index} className="menu-item-wrapper">
+                                {item.submenu ? (
+                                    <>
+                                        <div
+                                            className={`menu-item has-submenu ${activeSubmenu === index ? 'submenu-open' : ''}`}
+                                            onClick={(e) => handleSubmenuToggle(index, e)}
+                                        >
+                                            <span className="menu-item-text">{item.label}</span>
+                                            <span className="menu-item-number">0{index + 1}</span>
+                                            <span className="submenu-arrow">▼</span>
+                                        </div>
+                                        <div className={`submenu ${activeSubmenu === index ? 'submenu-active' : ''}`}>
+                                            {item.submenu.map((subItem, subIndex) => (
+                                                <Link
+                                                    key={subIndex}
+                                                    to={subItem.path}
+                                                    className="submenu-item"
+                                                    onClick={() => setMenuOpen(false)}
+                                                >
+                                                    {subItem.label}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <Link
+                                        to={item.path}
+                                        className="menu-item"
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        <span className="menu-item-text">{item.label}</span>
+                                        <span className="menu-item-number">0{index + 1}</span>
+                                    </Link>
+                                )}
+                            </div>
                         ))}
                     </div>
 
@@ -102,8 +149,8 @@ const NivoraNav = () => {
                         <div className="menu-footer-col">
                             <span>Socials</span>
                             <div className="flex gap-4">
-                                <a href="#" className="hover:text-[#B1DD34]">Instagram</a>
-                                <a href="#" className="hover:text-[#B1DD34]">Twitter</a>
+                                <a href="#" className="hover:text-[#D4AF37]">Instagram</a>
+                                <a href="#" className="hover:text-[#D4AF37]">Twitter</a>
                             </div>
                         </div>
                     </div>
@@ -149,7 +196,6 @@ const NivoraNav = () => {
                 .menu-inner-scroll {
                     width: 100%; height: 100%; overflow-y: auto;
                     display: flex; flex-direction: column; 
-                    /* FIX: Center vertically but ensure enough top room */
                     justify-content: center;
                     padding: 100px var(--spacing-container) 40px; 
                 }
@@ -160,6 +206,11 @@ const NivoraNav = () => {
                     margin-bottom: 2rem;
                 }
 
+                .menu-item-wrapper {
+                    display: flex;
+                    flex-direction: column;
+                }
+
                 .menu-item {
                     font-family: var(--font-display); 
                     font-size: clamp(2.5rem, 8vw, 6rem);
@@ -167,6 +218,7 @@ const NivoraNav = () => {
                     line-height: 0.85; display: flex; align-items: flex-start; gap: 1rem;
                     will-change: transform; transform: translateZ(0); 
                     text-decoration: none;
+                    cursor: pointer;
                 }
                 
                 .menu-item:hover {
@@ -178,6 +230,55 @@ const NivoraNav = () => {
                 .menu-item-number {
                     font-size: 0.875rem; font-weight: 400; letter-spacing: 0.05em;
                     color: var(--accent); margin-top: 0.5em;
+                }
+
+                /* Submenu Arrow */
+                .submenu-arrow {
+                    font-size: 0.875rem;
+                    margin-left: auto;
+                    margin-top: 0.5em;
+                    color: var(--accent);
+                    transition: transform 0.3s ease;
+                }
+
+                .menu-item.submenu-open .submenu-arrow {
+                    transform: rotate(180deg);
+                }
+
+                /* Submenu Styles */
+                .submenu {
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                                padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                    padding-left: 2rem;
+                }
+
+                .submenu.submenu-active {
+                    max-height: 300px;
+                    padding-top: 1rem;
+                    padding-bottom: 1rem;
+                }
+
+                .submenu-item {
+                    display: block;
+                    font-family: var(--font-body);
+                    font-size: 1.25rem;
+                    font-weight: 400;
+                    color: var(--text-muted);
+                    padding: 0.75rem 0;
+                    text-decoration: none;
+                    transition: color 0.3s ease, transform 0.3s ease;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                }
+
+                .submenu-item:last-child {
+                    border-bottom: none;
+                }
+
+                .submenu-item:hover {
+                    color: var(--accent);
+                    transform: translateX(10px);
                 }
                 
                 .menu-footer {
@@ -195,6 +296,7 @@ const NivoraNav = () => {
                         justify-content: flex-start;
                     }
                     .menu-item { font-size: clamp(2rem, 12vw, 4rem); }
+                    .submenu-item { font-size: 1rem; }
                 }
 
                 @media (max-height: 600px) {

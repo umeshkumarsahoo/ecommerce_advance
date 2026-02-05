@@ -121,6 +121,7 @@ const NivoraHero = () => {
                 .hero-title {
                     display: flex; flex-direction: column; align-items: center; justify-content: center;
                     line-height: 0.85; transform: translateZ(0);
+                    padding-bottom: 6rem;
                 }
                 .hero-word {
                     font-family: var(--font-display); font-size: clamp(4rem, 13vw, 12rem);
@@ -128,16 +129,18 @@ const NivoraHero = () => {
                     white-space: nowrap; will-change: transform;
                 }
                 .hero-gradient {
-                    background: linear-gradient(135deg, #fff 20%, #B1DD34 80%);
+                    background: linear-gradient(135deg, #fff 20%, #D4AF37 80%);
                     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
                     font-style: italic; transform: scale(1.05);
                 }
                 .hero-bottom {
-                    position: absolute; bottom: 60px; width: 100%; padding: 0 var(--spacing-container);
+                    position: absolute; bottom: 40px; width: 100%; padding: 0 var(--spacing-container);
                     display: flex; justify-content: space-between; align-items: flex-end;
+                    margin-top: 3rem;
                 }
                 .hero-subtitle {
                     max-width: 300px; font-size: 1rem; color: rgba(255, 255, 255, 0.8); line-height: 1.5;
+                    margin-top: 1.5rem;
                 }
                 @media (max-width: 768px) {
                     .hero-bottom { flex-direction: column; align-items: center; gap: 2rem; text-align: center; }

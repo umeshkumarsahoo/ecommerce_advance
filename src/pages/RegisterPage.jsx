@@ -11,6 +11,7 @@ function RegisterPage() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        mobile: '',
         password: '',
         confirmPassword: ''
     });
@@ -53,6 +54,33 @@ function RegisterPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Mobile number validation: exactly 10 digits
+        const mobileRegex = /^[0-9]{10}$/;
+        if (!mobileRegex.test(formData.mobile)) {
+            alert('Please enter a valid 10-digit mobile number');
+            return;
+        }
+
+        // Password validation: minimum 5 characters, at least one uppercase letter and one number
+        if (formData.password.length < 5) {
+            alert('Password must be at least 5 characters long');
+            return;
+        }
+
+        const hasUppercase = /[A-Z]/.test(formData.password);
+        const hasNumber = /[0-9]/.test(formData.password);
+
+        if (!hasUppercase) {
+            alert('Password must contain at least one uppercase letter');
+            return;
+        }
+
+        if (!hasNumber) {
+            alert('Password must contain at least one number');
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
             alert('Passwords do not match');
             return;
@@ -113,6 +141,20 @@ function RegisterPage() {
                                 placeholder="your@email.com"
                                 required
                                 autoComplete="email"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="mobile" className="text-meta">Mobile Number</label>
+                            <input
+                                type="tel"
+                                id="mobile"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleChange}
+                                placeholder="10-digit mobile number"
+                                required
+                                autoComplete="tel"
                             />
                         </div>
 
