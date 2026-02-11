@@ -7,15 +7,15 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
  * 
  * HARDCODED CREDENTIALS (Demo Only):
  * 
- * VIP USER:
+ * EXCLUSIVE MEMBER:
  *   - Username: "vip"
  *   - Password: "vip123"
- *   - Features: Exclusive member access, priority support, VIP discounts
+ *   - Features: Exclusive member access, priority support, 20% discounts
  * 
- * NON-VIP USER:
+ * STANDARD MEMBER:
  *   - Username: "user"
  *   - Password: "user123"
- *   - Features: Standard member, can upgrade to Pro/VIP
+ *   - Features: Standard member, can upgrade to Exclusive
  * 
  * ============================================================================
  */
@@ -33,13 +33,14 @@ const USERS_DATABASE = {
         email: 'alexandra@lumiere.com',
         memberSince: '2023',
         isVIP: true,
-        membershipTier: 'VIP',
+        membershipTier: 'Exclusive',
         benefits: [
             'Free Express Shipping',
             'Early Access to Collections',
-            'Exclusive VIP Discounts (20%)',
+            'Exclusive Member Discount (20%)',
             'Priority Customer Support',
-            'Complimentary Gift Wrapping'
+            'Complimentary Gift Wrapping',
+            'Exclusive VIP Events Access'
         ]
     },
     user: {
@@ -150,26 +151,51 @@ export const AuthProvider = ({ children }) => {
     };
 
     // ---------------------------------------------------------------------------
-    // UPGRADE TO VIP FUNCTION
-    // Allows non-VIP users to upgrade their membership
+    // UPGRADE TO EXCLUSIVE FUNCTION
+    // Allows non-Exclusive users to upgrade their membership
     // ---------------------------------------------------------------------------
-    const upgradeToVIP = (tier = 'VIP') => {
+    const upgradeToExclusive = () => {
         if (!user) return { success: false, error: 'Must be logged in to upgrade' };
 
-        // Get VIP benefits from database
-        const vipBenefits = USERS_DATABASE.vip.benefits;
+        // Get Exclusive benefits from database
+        const exclusiveBenefits = USERS_DATABASE.vip.benefits;
 
-        // Update user with VIP status
+        // Update user with Exclusive status
         const upgradedUser = {
             ...user,
             isVIP: true,
-            membershipTier: tier,
-            benefits: vipBenefits
+            membershipTier: 'Exclusive',
+            benefits: exclusiveBenefits
         };
 
         // Update state and persist
         setUser(upgradedUser);
         localStorage.setItem('luxuryUser', JSON.stringify(upgradedUser));
+
+        return { success: true };
+    };
+
+    // ---------------------------------------------------------------------------
+    // DOWNGRADE FROM EXCLUSIVE FUNCTION
+    // Allows Exclusive users to cancel and return to Standard membership
+    // ---------------------------------------------------------------------------
+    const downgradeFromExclusive = () => {
+        if (!user) return { success: false, error: 'Must be logged in to downgrade' };
+
+        // Get Standard benefits from database
+        const standardBenefits = USERS_DATABASE.user.benefits;
+
+        // Revert user to Standard status
+        const downgradedUser = {
+            ...user,
+            isVIP: false,
+            membershipTier: 'Standard',
+            benefits: standardBenefits
+        };
+
+        // Update state and persist
+        setUser(downgradedUser);
+        localStorage.setItem('luxuryUser', JSON.stringify(downgradedUser));
 
         return { success: true };
     };
@@ -184,7 +210,8 @@ export const AuthProvider = ({ children }) => {
         membershipTier: user?.membershipTier || null,
         login,
         logout,
-        upgradeToVIP
+        upgradeToExclusive,
+        downgradeFromExclusive
     };
 
     return (

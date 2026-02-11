@@ -1,22 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 /**
  * NivoraNav - Hybrid Minimal Luxury Navigation
  * 
- * LAYOUT FIX:
- * - "HOME getting cropped from top" - Adjusted vertical centering and padding.
- * - Reduced initial y-offset in entry animation to prevent clipping during transition.
- * 
- * SUBMENU FEATURE:
- * - Collection item has a submenu with categories
+ * AUTH FEATURE:
+ * - Shows user dropdown in top right when logged in (with Dashboard + Logout)
+ * - Shows Login link in top right when not logged in
+ * - Cart visible only when logged in
+ * - No Dashboard/Login in hamburger menu - all in top right corner
  */
 const NivoraNav = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSubmenu, setActiveSubmenu] = useState(null);
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const { isAuthenticated, user, logout } = useAuth();
+    const { cartCount } = useCart();
+    const navigate = useNavigate();
+    const dropdownRef = useRef(null);
 
+    // Handle scroll state
     useEffect(() => {
         let ticking = false;
         const handleScroll = () => {
@@ -31,13 +38,25 @@ const NivoraNav = () => {
         window.addEventListener('scroll', handleScroll, { passive: true });
 
         gsap.fromTo('.nivora-nav',
-            { y: -30, opacity: 0 }, // Reduced from -100 to prevent clipping
+            { y: -30, opacity: 0 },
             { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.2 }
         );
 
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setUserDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Menu animation
     useEffect(() => {
         if (menuOpen) {
             gsap.to('.nav-menu', {
@@ -55,11 +74,11 @@ const NivoraNav = () => {
                 duration: 0.5,
                 ease: 'power3.inOut'
             });
-            setActiveSubmenu(null); // Close submenu when menu closes
+            setActiveSubmenu(null);
         }
     }, [menuOpen]);
 
-    // Menu items with submenu support
+    // Static menu items (no Dashboard/Login - those are in top right)
     const menuItems = [
         { label: 'Home', path: '/' },
         {
@@ -68,21 +87,33 @@ const NivoraNav = () => {
             submenu: [
                 { label: 'New Arrivals', path: '/collections?category=new' },
                 { label: 'Jewelry', path: '/collections?category=jewelry' },
-                { label: 'Accessories', path: '/collections?category=accessories' },
+                { label: 'Clothing', path: '/collections?category=clothing' },
                 { label: 'Sale', path: '/collections?category=sale' }
             ]
         },
         { label: 'Editorial', path: '/journal' },
         { label: 'About', path: '/stories' },
-        { label: 'Contact', path: '/contact' },
-        { label: 'Login', path: '/login' }
+        { label: 'Contact', path: '/contact' }
     ];
 
-    // Toggle submenu
     const handleSubmenuToggle = (index, e) => {
         e.preventDefault();
         setActiveSubmenu(activeSubmenu === index ? null : index);
     };
+
+    const handleLogout = () => {
+        setUserDropdownOpen(false);
+        logout();
+        navigate('/');
+    };
+
+    const handleDashboard = () => {
+        setUserDropdownOpen(false);
+        navigate('/dashboard');
+    };
+
+    // Get first name for display
+    const firstName = user?.name?.split(' ')[0] || 'User';
 
     return (
         <>
@@ -98,8 +129,37 @@ const NivoraNav = () => {
 
                 <Link to="/" className="nav-brand">BECANÉ</Link>
 
+                {/* Right section: User dropdown only (no cart) */}
                 <div className="nav-right">
-                    <Link to="/cart" className="nav-link">CART (0)</Link>
+                    {/* User dropdown or Login */}
+                    {isAuthenticated ? (
+                        <div className="user-dropdown-wrapper" ref={dropdownRef}>
+                            <button
+                                className="user-trigger"
+                                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                            >
+                                <span className="user-name">{firstName}</span>
+                                <span className="user-arrow">{userDropdownOpen ? '▲' : '▼'}</span>
+                            </button>
+
+                            {userDropdownOpen && (
+                                <div className="user-dropdown">
+                                    <button className="dropdown-item" onClick={handleDashboard}>
+                                        <span className="dropdown-icon">📊</span>
+                                        Dashboard
+                                    </button>
+                                    <button className="dropdown-item logout-item" onClick={handleLogout}>
+                                        <span className="dropdown-icon">🚪</span>
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <Link to="/login" className="nav-link nav-login">
+                            LOGIN
+                        </Link>
+                    )}
                 </div>
             </header>
 
@@ -149,8 +209,8 @@ const NivoraNav = () => {
                         <div className="menu-footer-col">
                             <span>Socials</span>
                             <div className="flex gap-4">
-                                <a href="#" className="hover:text-[#D4AF37]">Instagram</a>
-                                <a href="#" className="hover:text-[#D4AF37]">Twitter</a>
+                                <a href="#">Instagram</a>
+                                <a href="#">Twitter</a>
                             </div>
                         </div>
                     </div>
@@ -182,10 +242,98 @@ const NivoraNav = () => {
                     letter-spacing: 0.15em; color: var(--text-primary);
                     position: absolute; left: 50%; transform: translateX(-50%); z-index: 1001;
                 }
-                .nav-right { z-index: 1001; }
+                
+                /* Right section with Cart + User */
+                .nav-right { 
+                    z-index: 1001; 
+                    display: flex; 
+                    align-items: center; 
+                    gap: 1.5rem;
+                }
                 .nav-link {
                     font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
-                    color: var(--text-primary); font-weight: 500;
+                    color: var(--text-primary); font-weight: 500; text-decoration: none;
+                }
+                .nav-login {
+                    padding: 0.5rem 1rem;
+                    border: 1px solid var(--accent);
+                    color: var(--accent);
+                    border-radius: 4px;
+                    transition: all 0.3s;
+                }
+                .nav-login:hover {
+                    background: var(--accent);
+                    color: var(--bg-primary);
+                }
+                
+                /* User dropdown */
+                .user-dropdown-wrapper {
+                    position: relative;
+                }
+                .user-trigger {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.5rem 1rem;
+                    background: rgba(212, 175, 55, 0.1);
+                    border: 1px solid var(--accent);
+                    border-radius: 4px;
+                    color: var(--accent);
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .user-trigger:hover {
+                    background: rgba(212, 175, 55, 0.2);
+                }
+                .user-arrow {
+                    font-size: 0.5rem;
+                }
+                .user-dropdown {
+                    position: absolute;
+                    top: calc(100% + 0.5rem);
+                    right: 0;
+                    min-width: 160px;
+                    background: var(--bg-secondary);
+                    border: 1px solid var(--border-light);
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                    animation: dropdownFade 0.2s ease;
+                }
+                @keyframes dropdownFade {
+                    from { opacity: 0; transform: translateY(-10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .dropdown-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    width: 100%;
+                    padding: 0.875rem 1rem;
+                    background: none;
+                    border: none;
+                    color: var(--text-primary);
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    text-align: left;
+                }
+                .dropdown-item:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                .dropdown-item.logout-item {
+                    border-top: 1px solid var(--border-light);
+                    color: #ff6b6b;
+                }
+                .dropdown-item.logout-item:hover {
+                    background: rgba(255, 107, 107, 0.1);
+                }
+                .dropdown-icon {
+                    font-size: 1rem;
                 }
                 
                 .nav-menu {
@@ -232,7 +380,6 @@ const NivoraNav = () => {
                     color: var(--accent); margin-top: 0.5em;
                 }
 
-                /* Submenu Arrow */
                 .submenu-arrow {
                     font-size: 0.875rem;
                     margin-left: auto;
@@ -245,7 +392,6 @@ const NivoraNav = () => {
                     transform: rotate(180deg);
                 }
 
-                /* Submenu Styles */
                 .submenu {
                     max-height: 0;
                     overflow: hidden;
@@ -291,6 +437,7 @@ const NivoraNav = () => {
                 }
                 
                 @media (max-width: 768px) {
+                    .nav-cart { display: none; }
                     .menu-inner-scroll {
                         padding-top: 120px; 
                         justify-content: flex-start;

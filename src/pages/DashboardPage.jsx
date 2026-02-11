@@ -3,130 +3,86 @@ import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import LuxuryButton from '../components/LuxuryButton';
 
 /**
  * ============================================================================
- * DashboardPage - User account dashboard with VIP/Non-VIP differentiation
+ * DashboardPage – Luxury Bento Grid Layout
  * ============================================================================
- * 
- * This dashboard renders differently based on the user's membership tier:
- * 
- * VIP MEMBERS:
- *   - VIP badge display
- *   - Exclusive benefits section
- *   - Premium 3D decorative element
- *   - Full access to all features
- * 
- * NON-VIP MEMBERS:
- *   - Standard member view
- *   - Prominent upgrade section with Pro/VIP tiers
- *   - Basic benefits display
- * 
- * Both use the same dark color scheme for consistency.
+ *
+ * Redesigned without sidebar. Uses the global NivoraNav for navigation.
+ * Features:
+ * - Bento-style card grid (Wishlist, Orders, Coins, Collections, Quick Actions)
+ * - Account header with avatar + welcome message
+ * - Floating cart button (bottom-right)
+ * - Exclusive upgrade card for standard members
+ * - VIP benefits panel for exclusive members
  * ============================================================================
  */
 
 function DashboardPage() {
-    // ---------------------------------------------------------------------------
-    // Hooks & State
-    // ---------------------------------------------------------------------------
-    const { user, isAuthenticated, isVIP, membershipTier, logout, upgradeToVIP } = useAuth();
+    const { user, isAuthenticated, isVIP, membershipTier, logout, upgradeToExclusive, downgradeFromExclusive } = useAuth();
     const { cartCount } = useCart();
     const navigate = useNavigate();
     const containerRef = useRef(null);
-    const [upgradeLoading, setUpgradeLoading] = useState(null);
+    const [upgradeLoading, setUpgradeLoading] = useState(false);
+    const [downgradeLoading, setDowngradeLoading] = useState(false);
 
-    // ---------------------------------------------------------------------------
-    // Auth Guard - Redirect if not authenticated
-    // ---------------------------------------------------------------------------
+    // Auth Guard
     useEffect(() => {
         if (!isAuthenticated) {
             navigate('/login');
         }
     }, [isAuthenticated, navigate]);
 
-    // ---------------------------------------------------------------------------
-    // GSAP Animations - Entry animations for dashboard cards
-    // ---------------------------------------------------------------------------
+    // GSAP Entrance Animations
     useEffect(() => {
+        if (!isAuthenticated) return;
         const ctx = gsap.context(() => {
-            gsap.set('.dashboard-card', { opacity: 0, y: 40 });
-            gsap.set('.dashboard-header', { opacity: 0, y: -30 });
-            gsap.set('.dashboard-3d', { opacity: 0, scale: 0.8 });
-            gsap.set('.upgrade-card', { opacity: 0, y: 30 });
+            gsap.set('.bento-header', { y: -20, opacity: 0 });
+            gsap.set('.bento-card', { y: 30, opacity: 0 });
+            gsap.set('.bento-fab', { scale: 0, opacity: 0 });
 
             const tl = gsap.timeline({ delay: 0.3 });
 
-            tl.to('.dashboard-header', {
-                opacity: 1,
-                y: 0,
-                duration: 0.8,
-                ease: 'power3.out'
+            tl.to('.bento-header', {
+                y: 0, opacity: 1, duration: 0.5, ease: 'power3.out'
             })
-                .to('.dashboard-3d', {
-                    opacity: 1,
-                    scale: 1,
-                    duration: 1,
-                    ease: 'back.out(1.7)'
-                }, '-=0.4')
-                .to('.dashboard-card', {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.6,
-                    stagger: 0.1,
-                    ease: 'power3.out'
-                }, '-=0.5')
-                .to('.upgrade-card', {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.6,
-                    stagger: 0.15,
-                    ease: 'power3.out'
-                }, '-=0.3');
+                .to('.bento-card', {
+                    y: 0, opacity: 1, duration: 0.4, stagger: 0.08, ease: 'power3.out'
+                }, '-=0.2')
+                .to('.bento-fab', {
+                    scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)'
+                }, '-=0.1');
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [isAuthenticated]);
 
-    // ---------------------------------------------------------------------------
-    // Event Handlers
-    // ---------------------------------------------------------------------------
+    // Handlers
+    const handleUpgrade = () => {
+        setUpgradeLoading(true);
+        setTimeout(() => {
+            upgradeToExclusive();
+            setUpgradeLoading(false);
+        }, 800);
+    };
+
+    const handleDowngrade = () => {
+        setDowngradeLoading(true);
+        setTimeout(() => {
+            downgradeFromExclusive();
+            setDowngradeLoading(false);
+        }, 800);
+    };
+
     const handleLogout = () => {
-        gsap.to('.dashboard-page', {
-            opacity: 0,
-            y: -20,
-            duration: 0.4,
-            onComplete: () => {
-                logout();
-                navigate('/');
-            }
+        gsap.to('.bento-dashboard', {
+            opacity: 0, duration: 0.3,
+            onComplete: () => { logout(); navigate('/'); }
         });
     };
 
-    const handleUpgrade = (tier) => {
-        setUpgradeLoading(tier);
-
-        // Simulate API call delay
-        setTimeout(() => {
-            const result = upgradeToVIP(tier);
-            setUpgradeLoading(null);
-
-            if (result.success) {
-                // Success animation
-                gsap.to('.upgrade-section', {
-                    opacity: 0,
-                    height: 0,
-                    duration: 0.5,
-                    ease: 'power2.out'
-                });
-            }
-        }, 1000);
-    };
-
-    // ---------------------------------------------------------------------------
-    // Mock Data - Recent orders and wishlist
-    // ---------------------------------------------------------------------------
+    // Mock Data (unchanged logic)
     const recentOrders = [
         { id: 'ORD-2026-001', date: 'Jan 15, 2026', status: 'Delivered', total: 1250 },
         { id: 'ORD-2026-002', date: 'Jan 10, 2026', status: 'In Transit', total: 890 },
@@ -139,502 +95,195 @@ function DashboardPage() {
         { id: 3, name: 'Cashmere Coat', price: 2200 }
     ];
 
-    // ---------------------------------------------------------------------------
-    // Membership Tier Options (for non-VIP users)
-    // ---------------------------------------------------------------------------
-    const membershipTiers = [
-        {
-            id: 'Pro',
-            name: 'Pro',
-            price: 49,
-            period: '/month',
-            features: [
-                'Free Standard Shipping',
-                '10% Member Discount',
-                'Early Access to Sales',
-                'Birthday Rewards'
-            ],
-            recommended: false
-        },
-        {
-            id: 'VIP',
-            name: 'VIP',
-            price: 99,
-            period: '/month',
-            features: [
-                'Free Express Shipping',
-                '20% VIP Discount',
-                'Early Access to Collections',
-                'Priority Support',
-                'Complimentary Gift Wrapping',
-                'Exclusive VIP Events'
-            ],
-            recommended: true
-        }
-    ];
+    // Exclusive Coins
+    const exclusiveCoins = isVIP ? 2450 : 450;
+    const coinMultiplier = isVIP ? '2x' : '1x';
 
-    // ---------------------------------------------------------------------------
-    // Guard - Don't render if not authenticated
-    // ---------------------------------------------------------------------------
-    if (!isAuthenticated) return null;
-
-    // ---------------------------------------------------------------------------
-    // Shared Styles
-    // ---------------------------------------------------------------------------
-    const styles = {
-        page: {
-            minHeight: '100vh',
-            paddingTop: '120px',
-            paddingBottom: '80px',
-            backgroundColor: 'var(--bg-primary)'
-        },
-        cardBase: {
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid var(--border-light)',
-            borderRadius: '8px',
-            padding: '2rem'
-        },
-        sectionTitle: {
-            fontSize: '0.7rem',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            marginBottom: '1.5rem'
-        },
-        actionItem: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '1rem',
-            background: 'rgba(255,255,255,0.03)',
-            borderRadius: '4px',
-            transition: 'background 0.3s'
-        }
+    // Exclusive plan
+    const exclusivePlan = {
+        price: 99,
+        features: ['Free Express Shipping', '2x Exclusive Coins', 'Early Access', 'Priority Support']
     };
 
-    // ===========================================================================
-    // RENDER
-    // ===========================================================================
+    if (!isAuthenticated) return null;
+
     return (
-        <div className="dashboard-page" ref={containerRef} style={styles.page}>
-            <div className="container">
+        <div className="bento-dashboard" ref={containerRef}>
 
-                {/* ----------------------------------------------------------------
-                    HEADER SECTION
-                    Shows user name, membership tier badge, and sign out button
-                ---------------------------------------------------------------- */}
-                <div className="dashboard-header" style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '4rem'
-                }}>
-                    <div>
-                        {/* Membership Badge */}
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1rem',
-                            marginBottom: '0.5rem'
-                        }}>
-                            <p style={{
-                                fontSize: '0.7rem',
-                                letterSpacing: '0.3em',
-                                textTransform: 'uppercase',
-                                color: 'var(--accent)'
-                            }}>
-                                Welcome Back
-                            </p>
-
-                            {/* VIP/Standard Badge */}
-                            <span style={{
-                                padding: '0.25rem 0.75rem',
-                                borderRadius: '999px',
-                                fontSize: '0.65rem',
-                                fontWeight: 600,
-                                letterSpacing: '0.1em',
-                                background: isVIP
-                                    ? 'linear-gradient(135deg, var(--accent) 0%, #b8860b 100%)'
-                                    : 'rgba(255,255,255,0.1)',
-                                color: isVIP ? '#000' : 'var(--text-secondary)'
-                            }}>
-                                {isVIP ? '★ VIP' : membershipTier || 'STANDARD'}
-                            </span>
-                        </div>
-
-                        {/* User Name */}
-                        <h1 style={{
-                            fontFamily: 'var(--font-display)',
-                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-                            fontWeight: 400,
-                            marginBottom: '0.5rem'
-                        }}>
-                            {user?.name || 'Member'}
-                        </h1>
-
-                        {/* Member Since */}
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                            Member since {user?.memberSince || '2024'}
-                        </p>
-                    </div>
-
-                    <LuxuryButton onClick={handleLogout} style={{ fontSize: '0.7rem' }}>
-                        Sign Out
-                    </LuxuryButton>
+            {/* ── DASHBOARD HEADER ── */}
+            <header className="bento-header">
+                <div className="bento-header-left">
+                    <h1 className="bento-title">Dashboard</h1>
+                    <p className="bento-subtitle">
+                        Welcome back, {user?.name?.split(' ')[0] || 'Member'}
+                    </p>
                 </div>
-
-                {/* ----------------------------------------------------------------
-                    UPGRADE SECTION (Non-VIP Only)
-                    Displays membership tier options for standard members
-                ---------------------------------------------------------------- */}
-                {!isVIP && (
-                    <div className="upgrade-section" style={{ marginBottom: '3rem' }}>
-                        <h2 style={{
-                            fontFamily: 'var(--font-display)',
-                            fontSize: '1.5rem',
-                            marginBottom: '0.5rem',
-                            textAlign: 'center'
-                        }}>
-                            Unlock Premium Benefits
-                        </h2>
-                        <p style={{
-                            color: 'var(--text-muted)',
-                            textAlign: 'center',
-                            marginBottom: '2rem'
-                        }}>
-                            Upgrade your membership to enjoy exclusive perks
-                        </p>
-
-                        {/* Tier Cards Grid */}
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                            gap: '1.5rem',
-                            maxWidth: '700px',
-                            margin: '0 auto'
-                        }}>
-                            {membershipTiers.map(tier => (
-                                <div
-                                    key={tier.id}
-                                    className="upgrade-card"
-                                    style={{
-                                        background: tier.recommended
-                                            ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)'
-                                            : 'rgba(255,255,255,0.02)',
-                                        border: tier.recommended
-                                            ? '2px solid var(--accent)'
-                                            : '1px solid var(--border-light)',
-                                        borderRadius: '12px',
-                                        padding: '2rem',
-                                        position: 'relative',
-                                        transition: 'transform 0.3s ease'
-                                    }}
-                                >
-                                    {/* Recommended Badge */}
-                                    {tier.recommended && (
-                                        <span style={{
-                                            position: 'absolute',
-                                            top: '-12px',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            background: 'var(--accent)',
-                                            color: '#000',
-                                            padding: '0.25rem 1rem',
-                                            borderRadius: '999px',
-                                            fontSize: '0.65rem',
-                                            fontWeight: 600,
-                                            letterSpacing: '0.1em'
-                                        }}>
-                                            RECOMMENDED
-                                        </span>
-                                    )}
-
-                                    {/* Tier Name */}
-                                    <h3 style={{
-                                        fontFamily: 'var(--font-display)',
-                                        fontSize: '1.25rem',
-                                        marginBottom: '0.5rem'
-                                    }}>
-                                        {tier.name}
-                                    </h3>
-
-                                    {/* Price */}
-                                    <div style={{ marginBottom: '1.5rem' }}>
-                                        <span style={{
-                                            fontSize: '2.5rem',
-                                            fontWeight: 700,
-                                            color: tier.recommended ? 'var(--accent)' : 'var(--text-primary)'
-                                        }}>
-                                            ${tier.price}
-                                        </span>
-                                        <span style={{ color: 'var(--text-muted)' }}>
-                                            {tier.period}
-                                        </span>
-                                    </div>
-
-                                    {/* Features List */}
-                                    <ul style={{
-                                        listStyle: 'none',
-                                        padding: 0,
-                                        margin: '0 0 1.5rem 0'
-                                    }}>
-                                        {tier.features.map((feature, idx) => (
-                                            <li
-                                                key={idx}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.5rem',
-                                                    padding: '0.5rem 0',
-                                                    fontSize: '0.85rem',
-                                                    color: 'var(--text-secondary)'
-                                                }}
-                                            >
-                                                <span style={{ color: 'var(--accent)' }}>✓</span>
-                                                {feature}
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    {/* Upgrade Button */}
-                                    <LuxuryButton
-                                        onClick={() => handleUpgrade(tier.id)}
-                                        disabled={upgradeLoading === tier.id}
-                                        style={{
-                                            width: '100%',
-                                            background: tier.recommended ? 'var(--accent)' : 'transparent',
-                                            color: tier.recommended ? '#000' : 'var(--text-primary)'
-                                        }}
-                                    >
-                                        {upgradeLoading === tier.id ? 'Processing...' : `Upgrade to ${tier.name}`}
-                                    </LuxuryButton>
-                                </div>
-                            ))}
-                        </div>
+                <div className="bento-header-right">
+                    <span className={`bento-tier-badge ${isVIP ? 'exclusive' : 'standard'}`}>
+                        {isVIP ? '★ Exclusive' : 'Standard'}
+                    </span>
+                    <div className="bento-avatar" onClick={handleLogout} title="Logout">
+                        {user?.name?.charAt(0) || 'U'}
                     </div>
-                )}
+                </div>
+            </header>
 
-                {/* ----------------------------------------------------------------
-                    DASHBOARD GRID
-                    Contains all dashboard cards
-                ---------------------------------------------------------------- */}
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                    gap: '2rem'
-                }}>
+            {/* ── BENTO GRID ── */}
+            <div className="bento-grid">
 
-                    {/* ============================================================
-                        VIP EXCLUSIVE CARD (VIP Only)
-                        Premium decorative card with 3D diamond animation
-                    ============================================================ */}
-                    {isVIP && (
-                        <div className="dashboard-card dashboard-3d" style={{
-                            gridColumn: 'span 2',
-                            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.02) 100%)',
-                            border: '1px solid rgba(212, 175, 55, 0.2)',
-                            borderRadius: '8px',
-                            padding: '3rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            minHeight: '200px',
-                            position: 'relative',
-                            overflow: 'hidden'
-                        }}>
-                            {/* 3D Diamond Animation */}
-                            <div style={{
-                                position: 'absolute',
-                                right: '10%',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                perspective: '1000px'
-                            }}>
-                                <div style={{
-                                    width: '120px',
-                                    height: '120px',
-                                    transformStyle: 'preserve-3d',
-                                    animation: 'rotate3d 8s ease-in-out infinite'
-                                }}>
-                                    <div style={{
-                                        position: 'absolute',
-                                        width: '100%',
-                                        height: '100%',
-                                        background: 'linear-gradient(135deg, var(--accent) 0%, #b8860b 50%, var(--accent) 100%)',
-                                        clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                                        opacity: 0.8,
-                                        boxShadow: '0 0 60px rgba(212, 175, 55, 0.4)'
-                                    }} />
-                                    <div style={{
-                                        position: 'absolute',
-                                        width: '60%',
-                                        height: '60%',
-                                        top: '20%',
-                                        left: '20%',
-                                        background: 'linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
-                                        clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                                        animation: 'shimmer 3s ease-in-out infinite'
-                                    }} />
-                                </div>
-                            </div>
-
-                            {/* CSS Keyframes */}
-                            <style>{`
-                                @keyframes rotate3d {
-                                    0%, 100% { transform: translateY(-50%) rotateY(0deg) rotateX(0deg); }
-                                    25% { transform: translateY(-50%) rotateY(15deg) rotateX(5deg); }
-                                    50% { transform: translateY(-50%) rotateY(0deg) rotateX(-5deg); }
-                                    75% { transform: translateY(-50%) rotateY(-15deg) rotateX(5deg); }
-                                }
-                                @keyframes shimmer {
-                                    0%, 100% { opacity: 0.3; }
-                                    50% { opacity: 0.8; }
-                                }
-                            `}</style>
-
-                            <div>
-                                <h2 style={{
-                                    fontFamily: 'var(--font-display)',
-                                    fontSize: '1.8rem',
-                                    marginBottom: '0.5rem'
-                                }}>
-                                    VIP Exclusive Member
-                                </h2>
-                                <p style={{ color: 'var(--text-muted)', maxWidth: '300px' }}>
-                                    Enjoy early access to new collections, priority support, and exclusive VIP benefits.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ============================================================
-                        BENEFITS CARD
-                        Shows user's current membership benefits
-                    ============================================================ */}
-                    <div className="dashboard-card" style={styles.cardBase}>
-                        <h3 style={styles.sectionTitle}>
-                            {isVIP ? 'VIP Benefits' : 'Your Benefits'}
-                        </h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {(user?.benefits || ['Standard Shipping']).map((benefit, idx) => (
-                                <div key={idx} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.75rem',
-                                    padding: '0.75rem',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '4px'
-                                }}>
-                                    <span style={{ color: 'var(--accent)' }}>✓</span>
-                                    <span style={{ fontSize: '0.85rem' }}>{benefit}</span>
-                                </div>
-                            ))}
-                        </div>
+                {/* Card 1: Order History (large) */}
+                <Link to="/cart" className="bento-card bento-orders">
+                    <div className="bento-card-header">
+                        <span className="bento-card-label">Order History</span>
+                        <span className="bento-card-arrow">→</span>
                     </div>
-
-                    {/* ============================================================
-                        QUICK ACTIONS CARD
-                        Navigation shortcuts to key pages
-                    ============================================================ */}
-                    <div className="dashboard-card" style={styles.cardBase}>
-                        <h3 style={styles.sectionTitle}>Quick Actions</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <Link to="/cart" style={styles.actionItem}>
-                                <span>Shopping Cart</span>
-                                <span style={{
-                                    background: 'var(--accent)',
-                                    color: '#000',
-                                    padding: '0.25rem 0.75rem',
-                                    borderRadius: '999px',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 600
-                                }}>
-                                    {cartCount}
-                                </span>
-                            </Link>
-                            <Link to="/collections" style={{
-                                display: 'block',
-                                padding: '1rem',
-                                background: 'rgba(255,255,255,0.03)',
-                                borderRadius: '4px',
-                                transition: 'background 0.3s'
-                            }}>
-                                Browse Collections
-                            </Link>
-                            <Link to="/stories" style={{
-                                display: 'block',
-                                padding: '1rem',
-                                background: 'rgba(255,255,255,0.03)',
-                                borderRadius: '4px',
-                                transition: 'background 0.3s'
-                            }}>
-                                Shop by Story
-                            </Link>
-                        </div>
-                    </div>
-
-                    {/* ============================================================
-                        RECENT ORDERS CARD
-                        Shows last 3 orders with status
-                    ============================================================ */}
-                    <div className="dashboard-card" style={styles.cardBase}>
-                        <h3 style={styles.sectionTitle}>Recent Orders</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {recentOrders.map(order => (
-                                <div key={order.id} style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '1rem',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '4px'
-                                }}>
-                                    <div>
-                                        <p style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>{order.id}</p>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{order.date}</p>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <p style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>
-                                            ${order.total.toLocaleString()}
-                                        </p>
-                                        <p style={{
-                                            fontSize: '0.7rem',
-                                            color: order.status === 'Delivered' ? '#22c55e' : 'var(--accent)'
-                                        }}>
-                                            {order.status}
-                                        </p>
-                                    </div>
+                    <div className="bento-card-value">24</div>
+                    <p className="bento-card-hint">Total orders placed</p>
+                    <div className="bento-orders-list">
+                        {recentOrders.map(order => (
+                            <div key={order.id} className="bento-order-row">
+                                <div>
+                                    <span className="bento-order-id">{order.id}</span>
+                                    <span className="bento-order-date">{order.date}</span>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* ============================================================
-                        WISHLIST CARD
-                        Shows saved items with prices
-                    ============================================================ */}
-                    <div className="dashboard-card" style={styles.cardBase}>
-                        <h3 style={styles.sectionTitle}>Wishlist</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {wishlistItems.map(item => (
-                                <div key={item.id} style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '1rem',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '4px'
-                                }}>
-                                    <span style={{ fontSize: '0.85rem' }}>{item.name}</span>
-                                    <span style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
-                                        ${item.price.toLocaleString()}
+                                <div className="bento-order-meta">
+                                    <span className="bento-order-total">${order.total.toLocaleString()}</span>
+                                    <span className={`bento-order-status ${order.status.toLowerCase().replace(' ', '-')}`}>
+                                        {order.status}
                                     </span>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
+                    </div>
+                </Link>
+
+                {/* Card 2: Exclusive Coins (gold accent) */}
+                <div className="bento-card bento-coins">
+                    <div className="bento-card-header">
+                        <span className="bento-card-label">Exclusive Coins</span>
+                        <span className="bento-coins-multiplier">{coinMultiplier}</span>
+                    </div>
+                    <div className="bento-coins-display">
+                        <span className="bento-coins-icon">🪙</span>
+                        <span className="bento-coins-value">{exclusiveCoins.toLocaleString()}</span>
+                    </div>
+                    <p className="bento-card-hint">
+                        {isVIP
+                            ? 'Earning 2x coins on every purchase'
+                            : 'Upgrade to earn 2x coins'}
+                    </p>
+                    <div className="bento-coins-perks">
+                        <span className="bento-perk">🎁 Discounts</span>
+                        <span className="bento-perk">✨ Early access</span>
+                        <span className="bento-perk">🎫 Vouchers</span>
                     </div>
                 </div>
+
+                {/* Card 3: Wishlist */}
+                <Link to="/collections" className="bento-card bento-wishlist">
+                    <div className="bento-card-header">
+                        <span className="bento-card-label">Wishlist</span>
+                        <span className="bento-card-arrow">→</span>
+                    </div>
+                    <div className="bento-card-value">{wishlistItems.length}</div>
+                    <p className="bento-card-hint">Saved items</p>
+                    <div className="bento-wishlist-items">
+                        {wishlistItems.map(item => (
+                            <div key={item.id} className="bento-wishlist-row">
+                                <span className="bento-wishlist-name">{item.name}</span>
+                                <span className="bento-wishlist-price">${item.price.toLocaleString()}</span>
+                            </div>
+                        ))}
+                    </div>
+                </Link>
+
+                {/* Card 4: Collections */}
+                <Link to="/collections" className="bento-card bento-collections">
+                    <div className="bento-card-header">
+                        <span className="bento-card-label">Collections</span>
+                        <span className="bento-card-arrow">→</span>
+                    </div>
+                    <div className="bento-collections-inner">
+                        <span className="bento-collections-icon">✦</span>
+                        <p className="bento-collections-text">Explore curated luxury collections</p>
+                    </div>
+                </Link>
+
+                {/* Card 5: Quick Actions */}
+                <div className="bento-card bento-actions">
+                    <div className="bento-card-header">
+                        <span className="bento-card-label">Quick Actions</span>
+                    </div>
+                    <div className="bento-actions-grid">
+                        <Link to="/collections" className="bento-action-btn">
+                            <span>✦</span> Browse
+                        </Link>
+                        <Link to="/stories" className="bento-action-btn">
+                            <span>📖</span> Stories
+                        </Link>
+                        <Link to="/journal" className="bento-action-btn">
+                            <span>📰</span> Journal
+                        </Link>
+                        <Link to="/contact" className="bento-action-btn">
+                            <span>💬</span> Contact
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Card 6: Upgrade OR Exclusive Benefits */}
+                {!isVIP ? (
+                    <div className="bento-card bento-upgrade">
+                        <div className="bento-card-header">
+                            <span className="bento-card-label">Go Exclusive</span>
+                            <span className="bento-upgrade-diamond">◆</span>
+                        </div>
+                        <p className="bento-upgrade-text">
+                            Unlock 2x coins, free shipping, early access & priority support.
+                        </p>
+                        <div className="bento-upgrade-price">
+                            <span className="bento-price-amount">${exclusivePlan.price}</span>
+                            <span className="bento-price-period">/mo</span>
+                        </div>
+                        <button
+                            className="bento-upgrade-btn"
+                            onClick={handleUpgrade}
+                            disabled={upgradeLoading}
+                        >
+                            {upgradeLoading ? 'Upgrading...' : 'Upgrade Now'}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="bento-card bento-benefits">
+                        <div className="bento-card-header">
+                            <span className="bento-card-label">Your Benefits</span>
+                            <span className="bento-upgrade-diamond">◆</span>
+                        </div>
+                        <div className="bento-benefits-list">
+                            {user?.benefits?.map((benefit, idx) => (
+                                <div key={idx} className="bento-benefit-item">
+                                    <span className="bento-benefit-check">✓</span>
+                                    {benefit}
+                                </div>
+                            ))}
+                        </div>
+                        <button
+                            className="bento-unsubscribe-btn"
+                            onClick={handleDowngrade}
+                            disabled={downgradeLoading}
+                        >
+                            {downgradeLoading ? 'Cancelling...' : 'Cancel Subscription'}
+                        </button>
+                    </div>
+                )}
             </div>
+
+            {/* ── FLOATING CART BUTTON ── */}
+            <Link to="/cart" className="bento-fab" title="Go to Cart">
+                🛒
+                {cartCount > 0 && (
+                    <span className="bento-fab-badge">{cartCount}</span>
+                )}
+            </Link>
         </div>
     );
 }

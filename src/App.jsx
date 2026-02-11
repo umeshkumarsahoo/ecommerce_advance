@@ -41,6 +41,26 @@ const ScrollToTop = () => {
 };
 
 /**
+ * ConditionalNav - Only show nav/footer on pages that need it
+ * Dashboard has its own sidebar, login/register have their own layout
+ */
+const ConditionalLayout = ({ children }) => {
+  const { pathname } = useLocation();
+
+  // Pages that have their own navigation/layout
+  const hideNavPages = ['/login', '/register'];
+  const shouldHideNav = hideNavPages.some(page => pathname.startsWith(page));
+
+  return (
+    <>
+      {!shouldHideNav && <NivoraNav />}
+      {children}
+      {!shouldHideNav && <NivoraFooter />}
+    </>
+  );
+};
+
+/**
  * App Component - Main Application Router
  * Refactored to use Nivora Components globally and include Preloader
  */
@@ -56,30 +76,26 @@ function App() {
           <ScrollProvider>
             <ScrollToTop />
 
-            {/* Global Nav with conditional visual state handled internally */}
-            <NivoraNav />
-
-            <main className="min-h-screen">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/payment" element={<PaymentPage />} />
-                <Route path="/journal" element={<JournalPage />} />
-                <Route path="/journal/:id" element={<JournalPage />} />
-                <Route path="/stories" element={<ShopByStoryPage />} />
-                <Route path="/stories/:id" element={<StoryDetailPage />} />
-                <Route path="/manifesto" element={<ManifestoPage />} />
-                <Route path="/collections" element={<CollectionsPage />} />
-                <Route path="/product/:id" element={<ProductDetailPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-              </Routes>
-            </main>
-
-            {/* Global Footer */}
-            <NivoraFooter />
+            <ConditionalLayout>
+              <main className="min-h-screen">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/payment" element={<PaymentPage />} />
+                  <Route path="/journal" element={<JournalPage />} />
+                  <Route path="/journal/:id" element={<JournalPage />} />
+                  <Route path="/stories" element={<ShopByStoryPage />} />
+                  <Route path="/stories/:id" element={<StoryDetailPage />} />
+                  <Route path="/manifesto" element={<ManifestoPage />} />
+                  <Route path="/collections" element={<CollectionsPage />} />
+                  <Route path="/product/:id" element={<ProductDetailPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                </Routes>
+              </main>
+            </ConditionalLayout>
 
           </ScrollProvider>
         </CartProvider>
@@ -89,3 +105,4 @@ function App() {
 }
 
 export default App;
+

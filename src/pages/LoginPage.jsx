@@ -84,7 +84,7 @@ function LoginPage() {
                 gsap.to('.login-page', {
                     opacity: 0,
                     duration: 0.5,
-                    onComplete: () => navigate('/dashboard')
+                    onComplete: () => navigate('/')
                 });
             } else {
                 setError(result.error);
@@ -206,7 +206,7 @@ function LoginPage() {
                         </LuxuryButton>
                     </form>
 
-                    {/* Demo Credentials Hint - Shows both VIP and non-VIP options */}
+                    {/* Demo Credentials Hint - Shows both Exclusive and Standard options */}
                     <div
                         style={{
                             marginTop: '1.5rem',
@@ -220,9 +220,9 @@ function LoginPage() {
                     >
                         <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Demo Credentials:</strong>
 
-                        {/* VIP User */}
+                        {/* Exclusive User */}
                         <div style={{ marginBottom: '0.5rem' }}>
-                            <span style={{ color: 'var(--accent)' }}>★ VIP:</span>{' '}
+                            <span style={{ color: 'var(--accent)' }}>★ Exclusive:</span>{' '}
                             <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>vip</code>
                             {' / '}
                             <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>vip123</code>

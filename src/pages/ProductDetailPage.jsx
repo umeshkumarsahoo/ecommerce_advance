@@ -4,7 +4,6 @@ import gsap from 'gsap';
 import AnimatedText from '../components/AnimatedText';
 import LuxuryButton from '../components/LuxuryButton';
 import { useCart } from '../context/CartContext';
-
 const productDatabase = {
     1: {
         id: 1,
