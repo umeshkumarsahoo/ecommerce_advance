@@ -159,7 +159,7 @@ function PaymentPage() {
                     justifyContent: 'center',
                     marginBottom: '2rem'
                 }}>
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--bg-primary)" strokeWidth="2">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
                 </div>
@@ -218,7 +218,7 @@ function PaymentPage() {
                             {/* Contact Information */}
                             <div className="checkout-section" style={{
                                 padding: '2rem',
-                                background: 'rgba(255,255,255,0.02)',
+                                background: 'rgba(0,0,0,0.02)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: '8px',
                                 marginBottom: '1.5rem'
@@ -249,7 +249,7 @@ function PaymentPage() {
                             {/* Shipping Address */}
                             <div className="checkout-section" style={{
                                 padding: '2rem',
-                                background: 'rgba(255,255,255,0.02)',
+                                background: 'rgba(0,0,0,0.02)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: '8px',
                                 marginBottom: '1.5rem'
@@ -350,7 +350,7 @@ function PaymentPage() {
                             {/* Payment Method */}
                             <div className="checkout-section" style={{
                                 padding: '2rem',
-                                background: 'rgba(255,255,255,0.02)',
+                                background: 'rgba(0,0,0,0.02)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: '8px'
                             }}>
@@ -383,8 +383,8 @@ function PaymentPage() {
                                                 flex: 1,
                                                 padding: '1rem',
                                                 background: paymentMethod === method.id
-                                                    ? 'rgba(212, 175, 55, 0.1)'
-                                                    : 'rgba(255,255,255,0.03)',
+                                                    ? 'rgba(79, 125, 181, 0.1)'
+                                                    : 'rgba(0,0,0,0.02)',
                                                 border: `1px solid ${paymentMethod === method.id
                                                     ? 'var(--color-accent)'
                                                     : 'var(--color-border)'}`,
@@ -473,7 +473,7 @@ function PaymentPage() {
                         }}>
                             <div style={{
                                 padding: '2rem',
-                                background: 'rgba(255,255,255,0.02)',
+                                background: 'rgba(0,0,0,0.02)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: '8px'
                             }}>
@@ -539,7 +539,7 @@ function PaymentPage() {
                                             style={{
                                                 padding: '0.75rem 1rem',
                                                 background: couponApplied ? 'transparent' : 'var(--color-accent)',
-                                                color: couponApplied ? 'var(--color-text-muted)' : '#000',
+                                                color: couponApplied ? 'var(--color-text-muted)' : 'var(--bg-primary)',
                                                 border: 'none',
                                                 borderRadius: '4px',
                                                 fontSize: '0.75rem',
@@ -629,7 +629,7 @@ function PaymentPage() {
                                         width: '100%',
                                         marginTop: '1.5rem',
                                         background: 'var(--color-accent)',
-                                        color: '#000',
+                                        color: 'var(--bg-primary)',
                                         border: 'none'
                                     }}
                                 >

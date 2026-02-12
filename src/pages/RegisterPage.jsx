@@ -199,7 +199,7 @@ function RegisterPage() {
                     </div>
 
                     <div className="social-login">
-                        <LuxuryButton style={{ width: '100%', background: 'rgba(255,255,255,0.05)' }}>
+                        <LuxuryButton style={{ width: '100%', background: 'rgba(0,0,0,0.03)' }}>
                             Continue with Google
                         </LuxuryButton>
                     </div>

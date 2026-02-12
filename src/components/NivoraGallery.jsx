@@ -90,7 +90,7 @@ const NivoraGallery = () => {
                 .card-image { will-change: transform; transition: transform 0.6s ease; width: 100%; }
                 .nivora-card:hover .card-image { transform: scale(1.05); }
                 .card-overlay {
-                    position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+                    position: absolute; inset: 0; background: rgba(0,0,0,0.3);
                     display: flex; align-items: center; justify-content: center;
                     opacity: 0; transition: opacity 0.4s ease;
                 }

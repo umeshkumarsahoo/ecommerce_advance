@@ -54,7 +54,7 @@ const NivoraTeam = () => {
                 .team-card { position: relative; cursor: pointer; }
                 .team-image-wrap {
                     aspect-ratio: 3/4; overflow: hidden; margin-bottom: 1.5rem; position: relative;
-                    border-radius: var(--radius-sm); background: #111;
+                    border-radius: var(--radius-sm); background: #DEE4EF;
                     /* GPU Promotion */
                     transform: translateZ(0); 
                 }

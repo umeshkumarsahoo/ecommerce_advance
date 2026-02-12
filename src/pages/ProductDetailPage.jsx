@@ -1,276 +1,485 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import gsap from 'gsap';
-import AnimatedText from '../components/AnimatedText';
-import LuxuryButton from '../components/LuxuryButton';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-const productDatabase = {
-    1: {
-        id: 1,
-        name: "The Trench",
-        price: 1200,
-        category: "Outerwear",
-        description: "A structured masterpiece crafted from heavy-weight Italian cotton. Water-resistant finish with horn buttons.",
-        images: ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=1200", "https://images.unsplash.com/photo-1591047139130-1e2eb4f5ca1b?w=1200"]
-    },
-    2: {
-        id: 2,
-        name: "Silk Blouse",
-        price: 450,
-        category: "Tops",
-        description: "Pure mulberry silk in a champagne hue. Fluid architecture for the body.",
-        images: ["https://images.unsplash.com/photo-1620799140408-ed5341cd2431?w=1200"]
-    },
-    3: {
-        id: 3,
-        name: "Diamond Pendant",
-        price: 3450,
-        category: "Jewelry",
-        description: "18K white gold pendant featuring a brilliant-cut diamond. Timeless elegance redefined.",
-        images: ["https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1200"]
-    },
-    4: {
-        id: 4,
-        name: "Cashmere Coat",
-        price: 2200,
-        category: "Outerwear",
-        description: "Double-faced cashmere in midnight blue. Hand-finished seams for unparalleled softness.",
-        images: ["https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=1200"]
-    },
-    default: {
-        id: 1,
-        name: "The Trench",
-        price: 1200,
-        category: "Outerwear",
-        description: "A structured masterpiece crafted from heavy-weight Italian cotton. Water-resistant finish with horn buttons.",
-        images: ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=1200"]
-    }
-};
+import { getProductById } from '../data/productData';
+
+// ═══════════════════════════════════════════════════════════════
+// ProductDetailPage — Premium product layout
+// Left: large image + thumbnails | Right: details + actions
+// ═══════════════════════════════════════════════════════════════
 
 function ProductDetailPage() {
     const { id } = useParams();
-    const product = productDatabase[id] || productDatabase.default;
-    const pageRef = useRef(null);
-    const [selectedSize, setSelectedSize] = useState(null);
-    const [addedToCart, setAddedToCart] = useState(false);
-
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const { addToCart } = useCart();
 
+    const product = getProductById(id);
+
+    const [selectedImage, setSelectedImage] = useState(0);
+    const [selectedSize, setSelectedSize] = useState(null);
+    const [addedToCart, setAddedToCart] = useState(false);
+    const [wishlisted, setWishlisted] = useState(false);
+
+    // Reset state when product changes
     useEffect(() => {
-        const ctx = gsap.context(() => {
-            gsap.fromTo('.product-reveal',
-                { opacity: 0, x: 20 },
-                { opacity: 1, x: 0, duration: 1, stagger: 0.1, ease: 'power3.out', delay: 0.5 }
-            );
-        }, pageRef);
-        return () => ctx.revert();
+        setSelectedImage(0);
+        setSelectedSize(null);
+        setAddedToCart(false);
+        window.scrollTo(0, 0);
     }, [id]);
 
+    // --- Star Rating ---
+    const renderStars = (rating) => {
+        const full = Math.floor(rating);
+        const half = rating % 1 >= 0.5;
+        let stars = '';
+        for (let i = 0; i < full; i++) stars += '★';
+        if (half) stars += '½';
+        for (let i = stars.length; i < 5; i++) stars += '☆';
+        return stars;
+    };
+
+    // --- Add to Cart ---
     const handleAddToCart = () => {
+        if (!isAuthenticated) {
+            alert('Please login to continue');
+            navigate(`/login?redirect=/product/${product.id}`);
+            return;
+        }
         addToCart({
             id: product.id,
             name: product.name,
             price: product.price,
             category: product.category,
             image: product.images[0],
-            size: selectedSize
+            size: selectedSize,
         });
-
         setAddedToCart(true);
-
-        // Animate success
-        gsap.to('.add-to-cart-btn', {
-            scale: 1.05,
-            duration: 0.2,
-            yoyo: true,
-            repeat: 1,
-            ease: 'power2.out'
-        });
-
-        setTimeout(() => setAddedToCart(false), 2000);
+        setTimeout(() => setAddedToCart(false), 2500);
     };
 
     return (
-        <div ref={pageRef} style={{ paddingTop: '100px', minHeight: '100vh', backgroundColor: 'var(--color-bg)' }}>
-            <div className="container section">
-                {/* Breadcrumb */}
-                <div className="product-reveal" style={{ marginBottom: '2rem' }}>
-                    <Link to="/collections" style={{
-                        color: 'var(--color-text-muted)',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.1em',
-                        textDecoration: 'none'
-                    }}>
-                        ← Back to Collection
-                    </Link>
-                </div>
+        <div style={s.page}>
+            <style>{responsiveCSS}</style>
 
-                <div className="grid-2" style={{ alignItems: 'start', gap: '4rem' }}>
+            {/* Breadcrumb */}
+            <div style={s.breadcrumb}>
+                <Link to="/collections" style={s.breadcrumbLink}>Collections</Link>
+                <span style={s.breadcrumbSep}>/</span>
+                <span style={s.breadcrumbCurrent}>{product.name}</span>
+            </div>
 
-                    {/* Product Images */}
-                    <div className="product-images product-reveal">
-                        <div style={{
-                            aspectRatio: '3/4',
-                            overflow: 'hidden',
-                            marginBottom: '1rem',
-                            background: '#111',
-                            borderRadius: '4px'
-                        }}>
-                            <img
-                                src={product.images[0]}
-                                alt={product.name}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    transition: 'transform 0.6s ease'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                            />
-                        </div>
-                        {/* Thumbnail Gallery */}
-                        {product.images.length > 1 && (
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                {product.images.map((img, i) => (
-                                    <div key={i} style={{
-                                        width: '80px',
-                                        height: '100px',
-                                        overflow: 'hidden',
-                                        borderRadius: '4px',
-                                        border: '1px solid var(--color-border)',
-                                        cursor: 'pointer'
-                                    }}>
-                                        <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+            {/* Main Content */}
+            <div className="pdp-layout" style={s.layout}>
+
+                {/* Left: Images */}
+                <div className="pdp-images">
+                    {/* Main Image */}
+                    <div style={s.mainImageWrap}>
+                        <img
+                            src={product.images[selectedImage]}
+                            alt={product.name}
+                            style={s.mainImage}
+                        />
                     </div>
 
-                    {/* Product Info */}
-                    <div style={{ position: 'sticky', top: '120px' }}>
-                        <AnimatedText>
-                            <span className="text-caption text-accent" style={{ display: 'block', marginBottom: '1rem' }}>
-                                {product.category?.toUpperCase() || 'COLLECTION 001'}
-                            </span>
-                        </AnimatedText>
+                    {/* Thumbnails */}
+                    {product.images.length > 1 && (
+                        <div style={s.thumbRow}>
+                            {product.images.map((img, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setSelectedImage(i)}
+                                    style={{
+                                        ...s.thumbBtn,
+                                        ...(selectedImage === i ? s.thumbBtnActive : {}),
+                                    }}
+                                >
+                                    <img src={img} alt="" style={s.thumbImg} />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                        <AnimatedText delay={0.1}>
-                            <h1 className="text-h1" style={{ marginBottom: '1rem' }}>{product.name}</h1>
-                        </AnimatedText>
+                {/* Right: Product Info */}
+                <div className="pdp-info" style={s.infoPanel}>
 
-                        <AnimatedText delay={0.2}>
-                            <p style={{
-                                fontFamily: 'var(--font-display)',
-                                fontSize: '2rem',
-                                marginBottom: '2rem',
-                                color: 'var(--color-accent)'
-                            }}>
-                                ${product.price.toLocaleString()}
-                            </p>
-                        </AnimatedText>
+                    {/* Brand */}
+                    <span style={s.brand}>{product.brand}</span>
 
-                        <AnimatedText delay={0.3}>
-                            <p className="text-body-lg" style={{ marginBottom: '3rem', maxWidth: '400px' }}>
-                                {product.description}
-                            </p>
-                        </AnimatedText>
+                    {/* Title */}
+                    <h1 style={s.title}>{product.name}</h1>
 
-                        <div className="product-reveal">
-                            <span className="text-caption" style={{ display: 'block', marginBottom: '1rem' }}>SIZE</span>
-                            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                                {['XS', 'S', 'M', 'L', 'XL'].map(size => (
+                    {/* Rating */}
+                    <div style={s.ratingRow}>
+                        <span style={s.stars}>{renderStars(product.rating)}</span>
+                        <span style={s.ratingNum}>{product.rating}</span>
+                    </div>
+
+                    {/* Price */}
+                    <p style={s.price}>€{product.price.toLocaleString()}</p>
+
+                    {/* Divider */}
+                    <div style={s.divider} />
+
+                    {/* Description */}
+                    <p style={s.description}>{product.description}</p>
+
+                    {/* Size Selector */}
+                    {product.sizes.length > 0 && (
+                        <div style={s.sizeSection}>
+                            <span style={s.sizeLabel}>Select Size</span>
+                            <div style={s.sizeGrid}>
+                                {product.sizes.map((size) => (
                                     <button
                                         key={size}
                                         onClick={() => setSelectedSize(size)}
                                         style={{
-                                            border: `1px solid ${selectedSize === size ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                                            color: selectedSize === size ? 'var(--color-accent)' : 'var(--color-text)',
-                                            background: selectedSize === size ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
-                                            width: '50px',
-                                            height: '50px',
-                                            display: 'grid',
-                                            placeItems: 'center',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease',
-                                            borderRadius: '4px'
+                                            ...s.sizeBtn,
+                                            ...(selectedSize === size ? s.sizeBtnActive : {}),
                                         }}
                                     >
-                                        <span className="text-caption" style={{ margin: 0 }}>{size}</span>
+                                        {size}
                                     </button>
                                 ))}
                             </div>
                         </div>
+                    )}
 
-                        <div className="product-reveal">
-                            <LuxuryButton
-                                className="add-to-cart-btn"
-                                onClick={handleAddToCart}
-                                style={{
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    background: addedToCart ? '#22c55e' : 'var(--color-accent)',
-                                    color: '#000',
-                                    border: 'none',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                {addedToCart ? '✓ Added to Cart' : 'Add to Cart'}
-                            </LuxuryButton>
-                        </div>
+                    {/* Divider */}
+                    <div style={s.divider} />
 
-                        {/* Wishlist Button */}
-                        <div className="product-reveal" style={{ marginTop: '1rem' }}>
-                            <button
-                                style={{
-                                    width: '100%',
-                                    padding: '1rem',
-                                    background: 'transparent',
-                                    border: '1px solid var(--color-border)',
-                                    color: 'var(--color-text)',
-                                    borderRadius: '999px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.75rem',
-                                    letterSpacing: '0.15em',
-                                    textTransform: 'uppercase',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                ♡ Add to Wishlist
-                            </button>
-                        </div>
-
-                        <div className="product-reveal" style={{ marginTop: '3rem', borderTop: '1px solid var(--color-border)', paddingTop: '2rem' }}>
-                            <div className="flex-between" style={{ marginBottom: '1rem', cursor: 'pointer' }}>
-                                <span className="text-caption">DETAILS & CARE</span>
-                                <span className="text-caption">+</span>
-                            </div>
-                            <div className="flex-between" style={{ marginBottom: '1rem', cursor: 'pointer' }}>
-                                <span className="text-caption">SHIPPING & RETURNS</span>
-                                <span className="text-caption">+</span>
-                            </div>
-                        </div>
-
-                        {/* Trust Badges */}
-                        <div className="product-reveal" style={{
-                            marginTop: '2rem',
-                            display: 'flex',
-                            gap: '2rem',
-                            color: 'var(--color-text-muted)',
-                            fontSize: '0.7rem',
-                            letterSpacing: '0.1em'
-                        }}>
-                            <span>🔒 Secure Checkout</span>
-                            <span>📦 Free Returns</span>
-                            <span>✨ Authenticity Guaranteed</span>
-                        </div>
+                    {/* Add to Cart & Wishlist */}
+                    <div style={s.actionRow}>
+                        <button
+                            onClick={handleAddToCart}
+                            style={{
+                                ...s.addBtn,
+                                ...(addedToCart ? s.addBtnSuccess : {}),
+                            }}
+                        >
+                            {addedToCart ? '✓ Added to Cart' : 'Add to Cart'}
+                        </button>
+                        <button
+                            onClick={() => setWishlisted(!wishlisted)}
+                            style={{
+                                ...s.wishBtn,
+                                ...(wishlisted ? s.wishBtnActive : {}),
+                            }}
+                            title="Toggle Wishlist"
+                        >
+                            {wishlisted ? '♥' : '♡'}
+                        </button>
                     </div>
 
+                    {/* Divider */}
+                    <div style={s.divider} />
+
+                    {/* Accordions */}
+                    <div style={s.accordion}>
+                        <span style={s.accordionLabel}>Details & Care</span>
+                        <span style={s.accordionIcon}>+</span>
+                    </div>
+                    <div style={s.accordion}>
+                        <span style={s.accordionLabel}>Shipping & Returns</span>
+                        <span style={s.accordionIcon}>+</span>
+                    </div>
+
+                    {/* Trust Badges */}
+                    <div style={s.trustRow}>
+                        <span>🔒 Secure Checkout</span>
+                        <span>📦 Free Returns</span>
+                        <span>✨ Authentic</span>
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════════
+const s = {
+    page: {
+        paddingTop: '100px',
+        minHeight: '100vh',
+        backgroundColor: '#F6F4FA',
+        fontFamily: "'Inter', 'Instrument Sans', sans-serif",
+    },
+
+    // Breadcrumb
+    breadcrumb: {
+        padding: '0 5vw',
+        marginBottom: '2rem',
+        maxWidth: '1440px',
+        margin: '0 auto 2rem',
+    },
+    breadcrumbLink: {
+        color: '#5A6B80',
+        fontSize: '0.78rem',
+        letterSpacing: '0.08em',
+        textDecoration: 'none',
+        textTransform: 'uppercase',
+    },
+    breadcrumbSep: {
+        color: '#BFBFBF',
+        margin: '0 0.5rem',
+        fontSize: '0.75rem',
+    },
+    breadcrumbCurrent: {
+        color: '#0C2340',
+        fontSize: '0.78rem',
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        fontWeight: 500,
+    },
+
+    // Layout
+    layout: {
+        maxWidth: '1440px',
+        margin: '0 auto',
+        padding: '0 5vw 80px',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '4rem',
+        alignItems: 'start',
+    },
+
+    // Main Image
+    mainImageWrap: {
+        aspectRatio: '3/4',
+        overflow: 'hidden',
+        borderRadius: '12px',
+        backgroundColor: '#DEE4EF',
+    },
+    mainImage: {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        display: 'block',
+        transition: 'transform 0.5s ease',
+    },
+
+    // Thumbnails
+    thumbRow: {
+        display: 'flex',
+        gap: '0.5rem',
+        marginTop: '0.75rem',
+    },
+    thumbBtn: {
+        width: '72px',
+        height: '90px',
+        overflow: 'hidden',
+        borderRadius: '6px',
+        border: '2px solid transparent',
+        padding: 0,
+        cursor: 'pointer',
+        backgroundColor: '#DEE4EF',
+        transition: 'border-color 0.2s',
+    },
+    thumbBtnActive: {
+        borderColor: '#4F7DB5',
+    },
+    thumbImg: {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        display: 'block',
+    },
+
+    // Info Panel
+    infoPanel: {
+        position: 'sticky',
+        top: '120px',
+    },
+    brand: {
+        fontSize: '0.72rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.15em',
+        color: '#4F7DB5',
+        display: 'block',
+        marginBottom: '0.5rem',
+    },
+    title: {
+        fontFamily: "'Instrument Sans', sans-serif",
+        fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
+        fontWeight: 700,
+        color: '#0C2340',
+        marginBottom: '0.75rem',
+        letterSpacing: '-0.02em',
+        lineHeight: 1.15,
+    },
+    ratingRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        marginBottom: '0.75rem',
+    },
+    stars: {
+        fontSize: '0.9rem',
+        color: '#4F7DB5',
+        letterSpacing: '2px',
+    },
+    ratingNum: {
+        fontSize: '0.8rem',
+        color: '#5A6B80',
+    },
+    price: {
+        fontFamily: "'Instrument Sans', sans-serif",
+        fontSize: '1.75rem',
+        fontWeight: 600,
+        color: '#0C2340',
+        marginBottom: '0.5rem',
+    },
+
+    divider: {
+        height: '1px',
+        backgroundColor: '#DEE4EF',
+        margin: '1.25rem 0',
+    },
+
+    description: {
+        fontSize: '0.92rem',
+        color: '#5A6B80',
+        lineHeight: 1.7,
+        marginBottom: '0.5rem',
+    },
+
+    // Sizes
+    sizeSection: {
+        marginTop: '0.5rem',
+    },
+    sizeLabel: {
+        fontSize: '0.72rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        color: '#5A6B80',
+        display: 'block',
+        marginBottom: '0.65rem',
+    },
+    sizeGrid: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '0.5rem',
+    },
+    sizeBtn: {
+        minWidth: '48px',
+        height: '44px',
+        border: '1px solid #DEE4EF',
+        borderRadius: '6px',
+        backgroundColor: 'transparent',
+        color: '#0C2340',
+        fontSize: '0.8rem',
+        fontWeight: 500,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        display: 'grid',
+        placeItems: 'center',
+        padding: '0 0.75rem',
+    },
+    sizeBtnActive: {
+        borderColor: '#4F7DB5',
+        backgroundColor: 'rgba(79,125,181,0.1)',
+        color: '#4F7DB5',
+        fontWeight: 600,
+    },
+
+    // Actions
+    actionRow: {
+        display: 'flex',
+        gap: '0.75rem',
+    },
+    addBtn: {
+        flex: 1,
+        padding: '0.9rem',
+        backgroundColor: '#4F7DB5',
+        color: '#FFFFFF',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '0.82rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+    },
+    addBtnSuccess: {
+        backgroundColor: '#22c55e',
+    },
+    wishBtn: {
+        width: '52px',
+        height: '52px',
+        display: 'grid',
+        placeItems: 'center',
+        border: '1px solid #DEE4EF',
+        borderRadius: '8px',
+        backgroundColor: 'transparent',
+        fontSize: '1.2rem',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        color: '#0C2340',
+    },
+    wishBtnActive: {
+        color: '#e11d48',
+        borderColor: '#e11d48',
+        backgroundColor: 'rgba(225,29,72,0.05)',
+    },
+
+    // Accordions
+    accordion: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '0.75rem 0',
+        cursor: 'pointer',
+        borderBottom: '1px solid #DEE4EF',
+    },
+    accordionLabel: {
+        fontSize: '0.75rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        color: '#0C2340',
+    },
+    accordionIcon: {
+        fontSize: '1rem',
+        color: '#5A6B80',
+    },
+
+    // Trust
+    trustRow: {
+        marginTop: '1.5rem',
+        display: 'flex',
+        gap: '1.5rem',
+        flexWrap: 'wrap',
+        color: '#5A6B80',
+        fontSize: '0.7rem',
+        letterSpacing: '0.05em',
+    },
+};
+
+
+// ═══════════════════════════════════════════════════════════════
+// RESPONSIVE CSS
+// ═══════════════════════════════════════════════════════════════
+const responsiveCSS = `
+    @media (max-width: 768px) {
+        .pdp-layout {
+            grid-template-columns: 1fr !important;
+            gap: 2rem !important;
+        }
+        .pdp-info {
+            position: static !important;
+        }
+    }
+`;
+
 
 export default ProductDetailPage;

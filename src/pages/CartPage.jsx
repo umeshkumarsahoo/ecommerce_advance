@@ -106,7 +106,7 @@ function CartPage() {
                     <div style={{
                         textAlign: 'center',
                         padding: '6rem 2rem',
-                        background: 'rgba(255,255,255,0.02)',
+                        background: 'rgba(0,0,0,0.02)',
                         border: '1px solid var(--color-border)',
                         borderRadius: '8px'
                     }}>
@@ -146,7 +146,7 @@ function CartPage() {
                                         display: 'flex',
                                         gap: '1.5rem',
                                         padding: '1.5rem',
-                                        background: 'rgba(255,255,255,0.02)',
+                                        background: 'rgba(0,0,0,0.02)',
                                         border: '1px solid var(--color-border)',
                                         borderRadius: '8px',
                                         transition: 'border-color 0.3s'
@@ -159,7 +159,7 @@ function CartPage() {
                                         flexShrink: 0,
                                         overflow: 'hidden',
                                         borderRadius: '4px',
-                                        background: '#111'
+                                        background: '#DEE4EF'
                                     }}>
                                         <img
                                             src={productImages[item.id] || productImages.default}
@@ -320,7 +320,7 @@ function CartPage() {
                             position: 'sticky',
                             top: '120px',
                             padding: '2rem',
-                            background: 'rgba(255,255,255,0.02)',
+                            background: 'rgba(0,0,0,0.02)',
                             border: '1px solid var(--color-border)',
                             borderRadius: '8px'
                         }}>
@@ -393,7 +393,7 @@ function CartPage() {
                                     style={{
                                         width: '100%',
                                         background: 'var(--color-accent)',
-                                        color: '#000',
+                                        color: 'var(--bg-primary)',
                                         border: 'none'
                                     }}
                                 >

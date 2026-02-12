@@ -211,8 +211,8 @@ function LoginPage() {
                         style={{
                             marginTop: '1.5rem',
                             padding: '1rem',
-                            background: 'rgba(212, 175, 55, 0.1)',
-                            border: '1px solid rgba(212, 175, 55, 0.2)',
+                            background: 'rgba(79, 125, 181, 0.1)',
+                            border: '1px solid rgba(79, 125, 181, 0.2)',
                             borderRadius: '4px',
                             fontSize: '0.75rem',
                             color: 'var(--accent)'
@@ -223,17 +223,17 @@ function LoginPage() {
                         {/* Exclusive User */}
                         <div style={{ marginBottom: '0.5rem' }}>
                             <span style={{ color: 'var(--accent)' }}>★ Exclusive:</span>{' '}
-                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>vip</code>
+                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>vip</code>
                             {' / '}
-                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>vip123</code>
+                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>vip123</code>
                         </div>
 
                         {/* Standard User */}
                         <div>
                             <span style={{ color: 'var(--text-muted)' }}>● Standard:</span>{' '}
-                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>user</code>
+                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>user</code>
                             {' / '}
-                            <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '2px' }}>user123</code>
+                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>user123</code>
                         </div>
                     </div>
 
@@ -242,7 +242,7 @@ function LoginPage() {
                     </div>
 
                     <div className="social-login">
-                        <LuxuryButton style={{ width: '100%', background: 'rgba(255,255,255,0.05)' }}>
+                        <LuxuryButton style={{ width: '100%', background: 'rgba(0,0,0,0.03)' }}>
                             Continue with Google
                         </LuxuryButton>
                     </div>

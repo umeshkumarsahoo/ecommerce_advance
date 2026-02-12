@@ -101,7 +101,7 @@ const NivoraShowcase = () => {
                 .showcase-preview { position: relative; height: 100%; }
                 .preview-sticky {
                     position: sticky; top: 20vh; height: 60vh; width: 100%;
-                    border-radius: var(--radius-lg); overflow: hidden; background: #111;
+                    border-radius: var(--radius-lg); overflow: hidden; background: #DEE4EF;
                     z-index: 10; transform: translateZ(0); 
                 }
                 .preview-image {
@@ -112,11 +112,11 @@ const NivoraShowcase = () => {
                 .preview-image.active { opacity: 1; transform: scale(1); z-index: 1; }
                 .preview-overlay {
                     position: absolute; inset: 0; z-index: 2; pointer-events: none;
-                    background: rgba(0,0,0,0.1); box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+                    background: rgba(0,0,0,0.05); box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
                 }
                 .scanline {
                     position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-                    background: rgba(177, 221, 52, 0.5); animation: scan 3s linear infinite; opacity: 0.5;
+                    background: rgba(79, 125, 181, 0.5); animation: scan 3s linear infinite; opacity: 0.5;
                 }
                 @keyframes scan {
                     0% { top: 0; opacity: 0; } 10% { opacity: 0.5; } 90% { opacity: 0.5; } 100% { top: 100%; opacity: 0; }

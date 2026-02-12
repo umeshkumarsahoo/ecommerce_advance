@@ -67,16 +67,16 @@ const Preloader = ({ onComplete }) => {
 
             <style>{`
                 .preloader {
-                    position: fixed; inset: 0; background-color: #000; z-index: 9999;
-                    display: flex; align-items: center; justify-content: center; color: #fff;
+                    position: fixed; inset: 0; background-color: #F6F4FA; z-index: 9999;
+                    display: flex; align-items: center; justify-content: center; color: #0C2340;
                 }
                 .preloader-content { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
                 .preloader-percent { font-family: 'Instrument Sans', sans-serif; font-size: 8rem; font-weight: 700; line-height: 1; }
                 .preloader-text {
                     font-family: 'Inter', sans-serif; letter-spacing: 0.5em; font-size: 0.875rem; text-transform: uppercase; opacity: 0.5;
                 }
-                .preloader-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.1); }
-                .preloader-fill { height: 100%; background: #D4AF37; transition: width 0.1s ease-out; }
+                .preloader-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: rgba(0,0,0,0.08); }
+                .preloader-fill { height: 100%; background: #4F7DB5; transition: width 0.1s ease-out; }
             `}</style>
         </div>
     );

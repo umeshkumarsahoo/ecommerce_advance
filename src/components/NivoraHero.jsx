@@ -72,9 +72,9 @@ const NivoraHero = () => {
             </div>
 
             <div className="hero-content container">
-                <div className="hero-top">
+                {/* <div className="hero-top">
                     <p className="hero-eyebrow">Estd. 2024 — India, Paris, France</p>
-                </div>
+                </div> */}
 
                 <div className="hero-title">
                     <div className="hero-line hero-word hero-word-left">LUXURY</div>
@@ -105,10 +105,10 @@ const NivoraHero = () => {
                     width: 100%; height: 115%; position: absolute; top: 0; left: 0;
                     will-change: transform; 
                 }
-                .hero-image { width: 100%; height: 90%; object-fit: cover; }
+                .hero-image { width: 100%; height: 90%; object-fit: cover; filter: brightness(1.15) saturate(0.8); }
                 .hero-overlay {
                     position: absolute; inset: 0;
-                    background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+                    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.45) 100%);
                 }
                 .hero-content {
                     position: relative; z-index: 10; width: 100%; height: 100%;
@@ -129,7 +129,7 @@ const NivoraHero = () => {
                     white-space: nowrap; will-change: transform;
                 }
                 .hero-gradient {
-                    background: linear-gradient(135deg, #fff 20%, #D4AF37 80%);
+                    background: linear-gradient(135deg, #fff 20%, #4F7DB5 80%);
                     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
                     font-style: italic; transform: scale(1.05);
                 }
@@ -139,7 +139,7 @@ const NivoraHero = () => {
                     margin-top: 3rem;
                 }
                 .hero-subtitle {
-                    max-width: 300px; font-size: 1rem; color: rgba(255, 255, 255, 0.8); line-height: 1.5;
+                    max-width: 300px; font-size: 1rem; color: rgba(255, 255, 255, 0.85); line-height: 1.5;
                     margin-top: 1.5rem;
                 }
                 @media (max-width: 768px) {
