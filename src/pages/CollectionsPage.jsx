@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+import { useWishlist } from '../context/WishlistContext';
 import { PRODUCTS, CATEGORIES } from '../data/productData';
+import SkeletonGrid from '../components/SkeletonLoader';
 
 // ═══════════════════════════════════════════════════════════════
 // CollectionsPage — Premium Minimal Filter Layout
@@ -16,6 +19,8 @@ function CollectionsPage() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
     const { addToCart } = useCart();
+    const { showToast } = useToast();
+    const { toggleWishlist, isWishlisted } = useWishlist();
 
     // --- Filter State ---
     const [selectedCategories, setSelectedCategories] = useState([]);
@@ -24,6 +29,7 @@ function CollectionsPage() {
     const [priceMax, setPriceMax] = useState('');
     const [inStockOnly, setInStockOnly] = useState(false);
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const drawerRef = useRef(null);
 
     // Lock body scroll when mobile filter is open
@@ -31,6 +37,12 @@ function CollectionsPage() {
         document.body.style.overflow = mobileFilterOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [mobileFilterOpen]);
+
+    // Simulate loading for skeleton
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 400);
+        return () => clearTimeout(timer);
+    }, []);
 
     // --- Toggle category checkbox ---
     const toggleCategory = (cat) => {
@@ -69,12 +81,12 @@ function CollectionsPage() {
         e.preventDefault();
         e.stopPropagation();
         if (!isAuthenticated) {
-            alert('Please login to continue');
+            showToast('Please login to continue', 'error');
             navigate('/login');
             return;
         }
         addToCart({ id: product.id, name: product.name, price: product.price, category: product.category, image: product.images[0] });
-        alert(`${product.name} added to cart!`);
+        showToast(`${product.name} added to cart`, 'success');
     };
 
     // --- Star rating ---
@@ -239,7 +251,9 @@ function CollectionsPage() {
                         </span>
                     </div>
 
-                    {filteredProducts.length === 0 ? (
+                    {isLoading ? (
+                        <SkeletonGrid count={6} />
+                    ) : filteredProducts.length === 0 ? (
                         <div style={s.emptyState}>
                             <p style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</p>
                             <h3 style={s.emptyTitle}>No products found</h3>
@@ -261,10 +275,23 @@ function CollectionsPage() {
                                         <img src={product.images[0]} alt={product.name} style={s.cardImage} loading="lazy" />
                                         {!product.inStock && <span style={s.soldOutBadge}>Sold Out</span>}
                                         <button
-                                            style={s.wishlistBtn}
-                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                                            title="Add to Wishlist"
-                                        >♡</button>
+                                            style={{
+                                                ...s.wishlistBtn,
+                                                ...(isWishlisted(product.id) ? { color: '#E74C3C', backgroundColor: 'rgba(231,76,60,0.1)' } : {}),
+                                            }}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                toggleWishlist({
+                                                    id: product.id,
+                                                    name: product.name,
+                                                    price: product.price,
+                                                    category: product.category,
+                                                    image: product.images[0],
+                                                });
+                                            }}
+                                            title="Toggle Wishlist"
+                                        >{isWishlisted(product.id) ? '♥' : '♡'}</button>
                                     </div>
                                     <div style={s.cardInfo}>
                                         <span style={s.cardCategory}>{product.category}</span>

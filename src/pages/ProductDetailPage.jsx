@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+import { useWishlist } from '../context/WishlistContext';
 import { getProductById } from '../data/productData';
 
 // ═══════════════════════════════════════════════════════════════
@@ -14,13 +16,15 @@ function ProductDetailPage() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
     const { addToCart } = useCart();
+    const { showToast } = useToast();
+    const { toggleWishlist, isWishlisted } = useWishlist();
 
     const product = getProductById(id);
 
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(null);
     const [addedToCart, setAddedToCart] = useState(false);
-    const [wishlisted, setWishlisted] = useState(false);
+    const wishlisted = product ? isWishlisted(product.id) : false;
 
     // Reset state when product changes
     useEffect(() => {
@@ -44,8 +48,8 @@ function ProductDetailPage() {
     // --- Add to Cart ---
     const handleAddToCart = () => {
         if (!isAuthenticated) {
-            alert('Please login to continue');
-            navigate(`/login?redirect=/product/${product.id}`);
+            showToast('Please login to add items to cart', 'error');
+            navigate('/login', { state: { from: `/product/${product.id}` } });
             return;
         }
         addToCart({
@@ -57,6 +61,7 @@ function ProductDetailPage() {
             size: selectedSize,
         });
         setAddedToCart(true);
+        showToast(`${product.name} added to cart`, 'success');
         setTimeout(() => setAddedToCart(false), 2500);
     };
 
@@ -164,7 +169,13 @@ function ProductDetailPage() {
                             {addedToCart ? '✓ Added to Cart' : 'Add to Cart'}
                         </button>
                         <button
-                            onClick={() => setWishlisted(!wishlisted)}
+                            onClick={() => toggleWishlist({
+                                id: product.id,
+                                name: product.name,
+                                price: product.price,
+                                category: product.category,
+                                image: product.images[0],
+                            })}
                             style={{
                                 ...s.wishBtn,
                                 ...(wishlisted ? s.wishBtnActive : {}),

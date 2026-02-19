@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { useAuth } from '../context/AuthContext';
 import LuxuryButton from '../components/LuxuryButton';
@@ -16,15 +16,19 @@ function LoginPage() {
 
     const { login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Where to redirect after login (set by ProtectedRoute)
+    const redirectTo = location.state?.from || '/';
 
     const containerRef = useRef(null);
 
     // Redirect if already logged in
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/dashboard');
+            navigate(redirectTo, { replace: true });
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, navigate, redirectTo]);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -84,7 +88,7 @@ function LoginPage() {
                 gsap.to('.login-page', {
                     opacity: 0,
                     duration: 0.5,
-                    onComplete: () => navigate('/')
+                    onComplete: () => navigate(redirectTo, { replace: true })
                 });
             } else {
                 setError(result.error);

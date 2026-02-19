@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 import LuxuryButton from '../components/LuxuryButton';
 
 /**
@@ -9,6 +10,7 @@ import LuxuryButton from '../components/LuxuryButton';
  */
 function CartPage() {
     const { cartItems, cartCount, cartSubtotal, shipping, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart();
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const containerRef = useRef(null);
 
@@ -45,6 +47,7 @@ function CartPage() {
     }, []);
 
     const handleRemoveItem = (id) => {
+        const itemName = cartItems.find(i => i.id === id)?.name || 'Item';
         const item = document.querySelector(`[data-item-id="${id}"]`);
         if (item) {
             gsap.to(item, {
@@ -55,11 +58,20 @@ function CartPage() {
                 margin: 0,
                 duration: 0.4,
                 ease: 'power2.in',
-                onComplete: () => removeFromCart(id)
+                onComplete: () => {
+                    removeFromCart(id);
+                    showToast(`${itemName} removed from cart`, 'info');
+                }
             });
         } else {
             removeFromCart(id);
+            showToast(`${itemName} removed from cart`, 'info');
         }
+    };
+
+    const handleClearCart = () => {
+        clearCart();
+        showToast('Cart cleared', 'info');
     };
 
     // Sample product images for demo
@@ -299,7 +311,7 @@ function CartPage() {
                                     ← Continue Shopping
                                 </Link>
                                 <button
-                                    onClick={clearCart}
+                                    onClick={handleClearCart}
                                     style={{
                                         background: 'transparent',
                                         border: 'none',

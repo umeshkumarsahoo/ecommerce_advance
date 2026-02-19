@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 /**
  * ============================================================================
@@ -13,7 +13,7 @@ import { useCart } from '../context/CartContext';
  * Features:
  * - Bento-style card grid (Wishlist, Orders, Coins, Collections, Quick Actions)
  * - Account header with avatar + welcome message
- * - Floating cart button (bottom-right)
+ * - Floating cart button (bottom-right) — REMOVED (now in navbar)
  * - Exclusive upgrade card for standard members
  * - VIP benefits panel for exclusive members
  * ============================================================================
@@ -21,7 +21,7 @@ import { useCart } from '../context/CartContext';
 
 function DashboardPage() {
     const { user, isAuthenticated, isVIP, membershipTier, logout, upgradeToExclusive, downgradeFromExclusive } = useAuth();
-    const { cartCount } = useCart();
+    const { wishlistItems } = useWishlist();
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const [upgradeLoading, setUpgradeLoading] = useState(false);
@@ -40,7 +40,6 @@ function DashboardPage() {
         const ctx = gsap.context(() => {
             gsap.set('.bento-header', { y: -20, opacity: 0 });
             gsap.set('.bento-card', { y: 30, opacity: 0 });
-            gsap.set('.bento-fab', { scale: 0, opacity: 0 });
 
             const tl = gsap.timeline({ delay: 0.3 });
 
@@ -49,10 +48,7 @@ function DashboardPage() {
             })
                 .to('.bento-card', {
                     y: 0, opacity: 1, duration: 0.4, stagger: 0.08, ease: 'power3.out'
-                }, '-=0.2')
-                .to('.bento-fab', {
-                    scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)'
-                }, '-=0.1');
+                }, '-=0.2');
         }, containerRef);
 
         return () => ctx.revert();
@@ -89,11 +85,7 @@ function DashboardPage() {
         { id: 'ORD-2025-089', date: 'Dec 28, 2025', status: 'Delivered', total: 2100 }
     ];
 
-    const wishlistItems = [
-        { id: 1, name: 'Silk Evening Gown', price: 1890 },
-        { id: 2, name: 'Diamond Pendant', price: 3450 },
-        { id: 3, name: 'Cashmere Coat', price: 2200 }
-    ];
+    // Wishlist items come from WishlistContext (no longer hardcoded)
 
     // Exclusive Coins
     const exclusiveCoins = isVIP ? 2450 : 450;
@@ -180,7 +172,7 @@ function DashboardPage() {
                 </div>
 
                 {/* Card 3: Wishlist */}
-                <Link to="/collections" className="bento-card bento-wishlist">
+                <Link to="/wishlist" className="bento-card bento-wishlist">
                     <div className="bento-card-header">
                         <span className="bento-card-label">Wishlist</span>
                         <span className="bento-card-arrow">→</span>
@@ -188,10 +180,10 @@ function DashboardPage() {
                     <div className="bento-card-value">{wishlistItems.length}</div>
                     <p className="bento-card-hint">Saved items</p>
                     <div className="bento-wishlist-items">
-                        {wishlistItems.map(item => (
+                        {wishlistItems.slice(0, 3).map(item => (
                             <div key={item.id} className="bento-wishlist-row">
                                 <span className="bento-wishlist-name">{item.name}</span>
-                                <span className="bento-wishlist-price">${item.price.toLocaleString()}</span>
+                                <span className="bento-wishlist-price">€{item.price.toLocaleString()}</span>
                             </div>
                         ))}
                     </div>
@@ -276,16 +268,9 @@ function DashboardPage() {
                     </div>
                 )}
             </div>
-
-            {/* ── FLOATING CART BUTTON ── */}
-            <Link to="/cart" className="bento-fab" title="Go to Cart">
-                🛒
-                {cartCount > 0 && (
-                    <span className="bento-fab-badge">{cartCount}</span>
-                )}
-            </Link>
         </div>
     );
 }
 
 export default DashboardPage;
+

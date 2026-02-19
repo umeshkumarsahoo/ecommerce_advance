@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ToastProvider } from './context/ToastContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 // Styles
 import './index.css';
@@ -22,12 +24,17 @@ import StoryDetailPage from './pages/StoryDetailPage';
 import DashboardPage from './pages/DashboardPage';
 import CartPage from './pages/CartPage';
 import PaymentPage from './pages/PaymentPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import NotFoundPage from './pages/NotFoundPage';
+import WishlistPage from './pages/WishlistPage';
 
 // Components
 import ScrollProvider from './components/ScrollProvider';
-import NivoraNav from './components/NivoraNav'; // Updated Global Nav
-import NivoraFooter from './components/NivoraFooter'; // Updated Global Footer
+import NivoraNav from './components/NivoraNav';
+import NivoraFooter from './components/NivoraFooter';
 import Preloader from './components/Preloader';
+import ToastContainer from './components/ToastContainer';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Helper to scroll to top on route change
 const ScrollToTop = () => {
@@ -41,8 +48,8 @@ const ScrollToTop = () => {
 };
 
 /**
- * ConditionalNav - Only show nav/footer on pages that need it
- * Dashboard has its own sidebar, login/register have their own layout
+ * ConditionalLayout - Only show nav/footer on pages that need it
+ * Login/register have their own layout
  */
 const ConditionalLayout = ({ children }) => {
   const { pathname } = useLocation();
@@ -62,7 +69,7 @@ const ConditionalLayout = ({ children }) => {
 
 /**
  * App Component - Main Application Router
- * Refactored to use Nivora Components globally and include Preloader
+ * Includes Preloader, Toast system, and Protected Routes
  */
 function App() {
   const [loading, setLoading] = useState(true);
@@ -73,31 +80,49 @@ function App() {
 
       <AuthProvider>
         <CartProvider>
-          <ScrollProvider>
-            <ScrollToTop />
+          <ToastProvider>
+            <WishlistProvider>
+              <ScrollProvider>
+                <ScrollToTop />
+                <ToastContainer />
 
-            <ConditionalLayout>
-              <main className="min-h-screen">
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/payment" element={<PaymentPage />} />
-                  <Route path="/journal" element={<JournalPage />} />
-                  <Route path="/journal/:id" element={<JournalPage />} />
-                  <Route path="/stories" element={<ShopByStoryPage />} />
-                  <Route path="/stories/:id" element={<StoryDetailPage />} />
-                  <Route path="/manifesto" element={<ManifestoPage />} />
-                  <Route path="/collections" element={<CollectionsPage />} />
-                  <Route path="/product/:id" element={<ProductDetailPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                </Routes>
-              </main>
-            </ConditionalLayout>
+                <ConditionalLayout>
+                  <main className="min-h-screen">
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/register" element={<RegisterPage />} />
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute><DashboardPage /></ProtectedRoute>
+                      } />
+                      <Route path="/cart" element={
+                        <ProtectedRoute><CartPage /></ProtectedRoute>
+                      } />
+                      <Route path="/payment" element={
+                        <ProtectedRoute><PaymentPage /></ProtectedRoute>
+                      } />
+                      <Route path="/order-confirmation" element={
+                        <ProtectedRoute><OrderConfirmationPage /></ProtectedRoute>
+                      } />
+                      <Route path="/wishlist" element={
+                        <ProtectedRoute><WishlistPage /></ProtectedRoute>
+                      } />
+                      <Route path="/journal" element={<JournalPage />} />
+                      <Route path="/journal/:id" element={<JournalPage />} />
+                      <Route path="/stories" element={<ShopByStoryPage />} />
+                      <Route path="/stories/:id" element={<StoryDetailPage />} />
+                      <Route path="/manifesto" element={<ManifestoPage />} />
+                      <Route path="/collections" element={<CollectionsPage />} />
+                      <Route path="/product/:id" element={<ProductDetailPage />} />
+                      <Route path="/contact" element={<ContactPage />} />
+                      <Route path="*" element={<NotFoundPage />} />
+                    </Routes>
+                  </main>
+                </ConditionalLayout>
 
-          </ScrollProvider>
+              </ScrollProvider>
+            </WishlistProvider>
+          </ToastProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

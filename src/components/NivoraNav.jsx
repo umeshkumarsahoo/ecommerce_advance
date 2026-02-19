@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import SearchOverlay from './SearchOverlay';
 
 /**
  * NivoraNav - Hybrid Minimal Luxury Navigation
@@ -19,8 +21,10 @@ const NivoraNav = () => {
     const [scrolled, setScrolled] = useState(false);
 
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
     const { cartCount } = useCart();
+    const { wishlistCount } = useWishlist();
     const navigate = useNavigate();
     const dropdownRef = useRef(null);
 
@@ -55,6 +59,18 @@ const NivoraNav = () => {
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Keyboard shortcut: Cmd/Ctrl + K to open search
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setSearchOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     // Menu animation
@@ -115,8 +131,43 @@ const NivoraNav = () => {
 
                 <Link to="/" className="nav-brand">BECANÉ</Link>
 
-                {/* Right section: User dropdown only (no cart) */}
+                {/* Right section: Search, Wishlist, Cart, User */}
                 <div className="nav-right">
+                    {/* Search trigger */}
+                    <button
+                        className="nav-icon-btn"
+                        onClick={() => setSearchOpen(true)}
+                        title="Search (⌘K)"
+                        aria-label="Open search"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                        </svg>
+                    </button>
+
+                    {/* Wishlist icon */}
+                    {isAuthenticated && (
+                        <Link to="/wishlist" className="nav-icon-btn" title="Wishlist" aria-label="Wishlist">
+                            ♡
+                            {wishlistCount > 0 && (
+                                <span className="nav-badge">{wishlistCount}</span>
+                            )}
+                        </Link>
+                    )}
+
+                    {/* Cart icon with badge */}
+                    {isAuthenticated && (
+                        <Link to="/cart" className="nav-icon-btn" title="Cart" aria-label="Cart">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                            </svg>
+                            {cartCount > 0 && (
+                                <span className="nav-badge">{cartCount}</span>
+                            )}
+                        </Link>
+                    )}
+
                     {/* User dropdown or Login */}
                     {isAuthenticated ? (
                         <div className="user-dropdown-wrapper" ref={dropdownRef}>
@@ -204,12 +255,58 @@ const NivoraNav = () => {
                     position: absolute; left: 50%; transform: translateX(-50%); z-index: 1001;
                 }
                 
-                /* Right section with Cart + User */
                 .nav-right { 
                     z-index: 1001; 
                     display: flex; 
                     align-items: center; 
-                    gap: 1.5rem;
+                    gap: 0.75rem;
+                }
+
+                /* Nav icon buttons (search, wishlist, cart) */
+                .nav-icon-btn {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 36px;
+                    height: 36px;
+                    border: none;
+                    background: none;
+                    color: var(--text-primary);
+                    cursor: pointer;
+                    border-radius: 6px;
+                    transition: background-color 0.2s ease, color 0.2s ease;
+                    font-size: 1.15rem;
+                    text-decoration: none;
+                    line-height: 1;
+                }
+                .nav-icon-btn:hover {
+                    background: rgba(79, 125, 181, 0.08);
+                    color: var(--accent);
+                }
+                .nav-badge {
+                    position: absolute;
+                    top: 2px;
+                    right: 0px;
+                    min-width: 16px;
+                    height: 16px;
+                    background: #4F7DB5;
+                    color: #fff;
+                    font-size: 0.6rem;
+                    font-weight: 700;
+                    border-radius: 999px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0 4px;
+                    line-height: 1;
+                    pointer-events: none;
+                    animation: navBadgePop 0.3s ease-out;
+                }
+                @keyframes navBadgePop {
+                    from { transform: scale(0); }
+                    50% { transform: scale(1.2); }
+                    to { transform: scale(1); }
                 }
                 .nav-link {
                     font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
@@ -366,6 +463,8 @@ const NivoraNav = () => {
                     .menu-inner-scroll { justify-content: flex-start; padding-top: 100px; }
                 }
             `}</style>
+
+            <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
         </>
     );
 };

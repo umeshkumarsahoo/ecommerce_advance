@@ -102,24 +102,28 @@ function PaymentPage() {
 
         // Simulate order processing
         setTimeout(() => {
-            setIsProcessing(false);
-            setOrderPlaced(true);
-            clearCart();
+            // Generate order number
+            const orderNumber = `BCN-2026-${String(Math.floor(Math.random() * 100000)).padStart(5, '0')}`;
 
-            // Success animation
-            gsap.to('.checkout-content', {
-                opacity: 0,
-                y: -30,
-                duration: 0.4
-            });
-            gsap.to('.success-message', {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                duration: 0.6,
-                delay: 0.3,
-                ease: 'back.out(1.7)'
-            });
+            // Store order data for the confirmation page
+            const orderData = {
+                orderNumber,
+                items: cartItems.map(item => ({
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                })),
+                subtotal: cartSubtotal,
+                discount,
+                shipping,
+                total: finalTotal,
+                date: new Date().toISOString()
+            };
+            sessionStorage.setItem('becane_last_order', JSON.stringify(orderData));
+
+            clearCart();
+            setIsProcessing(false);
+            navigate('/order-confirmation');
         }, 2000);
     };
 
