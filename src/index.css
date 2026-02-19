@@ -1,4 +1,4 @@
-/* 
+/*
   BECANÉ LUXURY ECOMMERCE - BLUE-NAVY LUXURY THEME
   Design System: Premium Blue-Navy
   Authors: Aditi · Ayushkant · Umesh
@@ -42,6 +42,34 @@
   --radius-lg: 24px;
   --radius-xl: 40px;
   --radius-full: 999px;
+
+  /* --- COMPONENT VARS (Light Default) --- */
+  --nav-bg-scrolled: rgba(246, 244, 250, 0.95);
+  --nav-border-scrolled: rgba(12, 35, 64, 0.05);
+}
+
+:root[data-theme="dark"] {
+  /* --- DARK THEME OVERRIDES --- */
+  --bg-primary: #05101E;
+  --bg-secondary: #0A1C30;
+  --bg-card: #0D2238;
+
+  --text-primary: #F0F4F8;
+  --text-secondary: #BCCCDC;
+  --text-muted: #64748B;
+
+  --accent: #6090C5;
+  --accent-hover: #4F7DB5;
+  --accent-dark: #3D6A9E;
+
+  --overlay-blue: rgba(79, 125, 181, 0.15);
+  --overlay-dark: rgba(0, 0, 0, 0.7);
+
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-accent: rgba(79, 125, 181, 0.4);
+
+  --nav-bg-scrolled: rgba(5, 16, 30, 0.95);
+  --nav-border-scrolled: rgba(255, 255, 255, 0.05);
 }
 
 /* --- RESET & BASE --- */
@@ -375,8 +403,8 @@ button {
 
 .nivora-nav.scrolled {
   backdrop-filter: blur(20px);
-  background: rgba(248, 246, 242, 0.9);
-  border-bottom: 1px solid var(--border-light);
+  background: var(--nav-bg-scrolled);
+  border-bottom: 1px solid var(--nav-border-scrolled);
 }
 
 .nav-brand {

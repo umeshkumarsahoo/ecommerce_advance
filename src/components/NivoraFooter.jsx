@@ -16,9 +16,9 @@ const NivoraFooter = () => {
                     <div>
                         <h4 className="footer-heading">Navigate</h4>
                         <Link to="/" className="footer-link">Home</Link>
-                        <Link to="/collection" className="footer-link">Collection</Link>
+                        <Link to="/collections" className="footer-link">Collection</Link>
                         <Link to="/journal" className="footer-link">Journal</Link>
-                        <Link to="/about" className="footer-link">About</Link>
+                        <Link to="/stories" className="footer-link">About</Link>
                     </div>
 
                     {/* Column 2 */}
