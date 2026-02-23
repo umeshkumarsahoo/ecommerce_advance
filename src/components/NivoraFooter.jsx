@@ -42,10 +42,10 @@ const NivoraFooter = () => {
             {/* Massive Ticker */}
             <div className="footer-ticker">
                 <div className="ticker-content">
-                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
-                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
-                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
-                    <span className="ticker-text">BECANÉ &mdash; DEFINES LUXURY</span>
+                    <span className="ticker-text">BECANÉ &mdash; FINE JEWELLERY</span>
+                    <span className="ticker-text">BECANÉ &mdash; FINE JEWELLERY</span>
+                    <span className="ticker-text">BECANÉ &mdash; FINE JEWELLERY</span>
+                    <span className="ticker-text">BECANÉ &mdash; FINE JEWELLERY</span>
                 </div>
             </div>
 

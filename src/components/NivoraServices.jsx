@@ -5,27 +5,24 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * NivoraServices - Hybrid Horizontal Scroll
- * 
- * Mixes old "FeaturedSection" layout ideas with Nivora's 
- * horizontal categorization and icon aesthetics.
+ * NivoraServices - Horizontal Scroll Marquee
+ * Jewellery-focused service categories
  */
 const NivoraServices = () => {
     const sectionRef = useRef(null);
     const trackRef = useRef(null);
 
     const services = [
-        { id: 1, label: "Product Design", icon: "✦" },
-        { id: 2, label: "Art Direction", icon: "✸" },
-        { id: 3, label: "Development", icon: "⚡" },
-        { id: 4, label: "Photography", icon: "◎" },
-        { id: 5, label: "Brand Identity", icon: "⌘" },
-        { id: 6, label: "Strategy", icon: "✣" }
+        { id: 1, label: "Bespoke Design", icon: "✦" },
+        { id: 2, label: "Diamond Setting", icon: "💎" },
+        { id: 3, label: "Gold Crafting", icon: "✸" },
+        { id: 4, label: "Engraving", icon: "◎" },
+        { id: 5, label: "Gemstone Sourcing", icon: "⌘" },
+        { id: 6, label: "Restoration", icon: "✣" }
     ];
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Horizontal scroll animation
             gsap.to(trackRef.current, {
                 xPercent: -50,
                 ease: 'none',
@@ -44,8 +41,6 @@ const NivoraServices = () => {
     return (
         <section ref={sectionRef} className="section services-section overflow-hidden">
             <div className="services-track" ref={trackRef}>
-                {/* Double the list for seamless loop illusion if needed, 
-                    but here simple scroll is fine for "mind bending" speed */}
                 {[...services, ...services].map((item, index) => (
                     <div key={`${item.id}-${index}`} className="service-item">
                         <span className="service-icon">{item.icon}</span>

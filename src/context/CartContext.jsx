@@ -85,7 +85,7 @@ export const CartProvider = ({ children }) => {
     // Calculated values
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
     const cartSubtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shipping = cartSubtotal > 500 ? 0 : 25; // Free shipping over $500
+    const shipping = cartSubtotal > 50000 ? 0 : 499; // Free shipping over ₹50,000
     const cartTotal = cartSubtotal + shipping;
 
     const value = {

@@ -27,7 +27,7 @@ function PaymentPage() {
         lastName: '',
         address: '',
         city: '',
-        country: 'United States',
+        country: 'India',
         zip: '',
         cardNumber: '',
         expiry: '',
@@ -330,15 +330,15 @@ function PaymentPage() {
                                                 width: '100%'
                                             }}
                                         >
+                                            <option value="India">India</option>
                                             <option value="United States">United States</option>
-                                            <option value="Canada">Canada</option>
                                             <option value="United Kingdom">United Kingdom</option>
                                             <option value="France">France</option>
                                             <option value="Germany">Germany</option>
                                         </select>
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="zip">ZIP Code</label>
+                                        <label htmlFor="zip">PIN Code</label>
                                         <input
                                             type="text"
                                             id="zip"
@@ -512,7 +512,7 @@ function PaymentPage() {
                                                     Qty: {item.quantity}
                                                 </p>
                                             </div>
-                                            <span>${(item.price * item.quantity).toLocaleString()}</span>
+                                            <span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -590,17 +590,17 @@ function PaymentPage() {
                                 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: 'var(--color-text-muted)' }}>Subtotal</span>
-                                        <span>${cartSubtotal.toLocaleString()}</span>
+                                        <span>₹{cartSubtotal.toLocaleString('en-IN')}</span>
                                     </div>
                                     {discount > 0 && (
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <span style={{ color: '#22c55e' }}>Discount</span>
-                                            <span style={{ color: '#22c55e' }}>-${discount.toLocaleString()}</span>
+                                            <span style={{ color: '#22c55e' }}>-₹{discount.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: 'var(--color-text-muted)' }}>Shipping</span>
-                                        <span>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                                        <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
                                     </div>
                                     <div style={{
                                         display: 'flex',
@@ -620,7 +620,7 @@ function PaymentPage() {
                                             fontSize: '1.3rem',
                                             color: 'var(--color-accent)'
                                         }}>
-                                            ${finalTotal.toLocaleString()}
+                                            ₹{finalTotal.toLocaleString('en-IN')}
                                         </span>
                                     </div>
                                 </div>

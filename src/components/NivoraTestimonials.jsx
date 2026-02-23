@@ -10,19 +10,19 @@ const NivoraTestimonials = () => {
 
     const testimonials = [
         {
-            quote: "Becané redesigns reality through fabric. It’s not just clothing; it’s an architectural statement for the body.",
+            quote: "Becané redefines fine jewellery. Each piece is an architectural marvel — precision meets soul in every setting.",
             author: "Elena Fisher",
-            role: "Vogue Paris"
+            role: "Robb Report"
         },
         {
-            quote: "A masterclass in modern luxury. The attention to detail is bordering on obsessional, in the best way possible.",
+            quote: "A masterclass in gemstone curation. The diamond clarity, the gold weight — nothing is left to chance. Pure obsession.",
             author: "Marcus Chen",
-            role: "Hypebeast"
+            role: "Town & Country"
         },
         {
-            quote: "Finally, a brand that understands silence. The pieces speak volume without shouting.",
+            quote: "Finally, a jewellery house that understands restraint. The pieces radiate brilliance without ever shouting.",
             author: "Sarah Jenkins",
-            role: "Independent Curator"
+            role: "JCK Magazine"
         }
     ];
 

@@ -80,9 +80,9 @@ function DashboardPage() {
 
     // Mock Data (unchanged logic)
     const recentOrders = [
-        { id: 'ORD-2026-001', date: 'Jan 15, 2026', status: 'Delivered', total: 1250 },
-        { id: 'ORD-2026-002', date: 'Jan 10, 2026', status: 'In Transit', total: 890 },
-        { id: 'ORD-2025-089', date: 'Dec 28, 2025', status: 'Delivered', total: 2100 }
+        { id: 'ORD-2026-001', date: 'Jan 15, 2026', status: 'Delivered', total: 125000 },
+        { id: 'ORD-2026-002', date: 'Jan 10, 2026', status: 'In Transit', total: 89000 },
+        { id: 'ORD-2025-089', date: 'Dec 28, 2025', status: 'Delivered', total: 210000 }
     ];
 
     // Wishlist items come from WishlistContext (no longer hardcoded)
@@ -93,7 +93,7 @@ function DashboardPage() {
 
     // Exclusive plan
     const exclusivePlan = {
-        price: 99,
+        price: 999,
         features: ['Free Express Shipping', '2x Exclusive Coins', 'Early Access', 'Priority Support']
     };
 
@@ -139,7 +139,7 @@ function DashboardPage() {
                                     <span className="bento-order-date">{order.date}</span>
                                 </div>
                                 <div className="bento-order-meta">
-                                    <span className="bento-order-total">${order.total.toLocaleString()}</span>
+                                    <span className="bento-order-total">₹{order.total.toLocaleString('en-IN')}</span>
                                     <span className={`bento-order-status ${order.status.toLowerCase().replace(' ', '-')}`}>
                                         {order.status}
                                     </span>
@@ -183,7 +183,7 @@ function DashboardPage() {
                         {wishlistItems.slice(0, 3).map(item => (
                             <div key={item.id} className="bento-wishlist-row">
                                 <span className="bento-wishlist-name">{item.name}</span>
-                                <span className="bento-wishlist-price">€{item.price.toLocaleString()}</span>
+                                <span className="bento-wishlist-price">₹{item.price.toLocaleString('en-IN')}</span>
                             </div>
                         ))}
                     </div>
@@ -233,7 +233,7 @@ function DashboardPage() {
                             Unlock 2x coins, free shipping, early access & priority support.
                         </p>
                         <div className="bento-upgrade-price">
-                            <span className="bento-price-amount">${exclusivePlan.price}</span>
+                            <span className="bento-price-amount">₹{exclusivePlan.price}</span>
                             <span className="bento-price-period">/mo</span>
                         </div>
                         <button

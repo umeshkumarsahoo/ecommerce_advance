@@ -133,7 +133,7 @@ function SearchOverlay({ isOpen, onClose }) {
                                     <div style={s.resultInfo}>
                                         <span style={s.resultCategory}>{product.category}</span>
                                         <span style={s.resultName}>{product.name}</span>
-                                        <span style={s.resultPrice}>€{product.price.toLocaleString()}</span>
+                                        <span style={s.resultPrice}>₹{product.price.toLocaleString('en-IN')}</span>
                                     </div>
                                     <span style={s.resultArrow}>→</span>
                                 </button>

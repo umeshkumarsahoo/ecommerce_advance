@@ -8,20 +8,20 @@ const NivoraFAQ = () => {
 
     const faqs = [
         {
-            question: "Do you ship internationally?",
-            answer: "Yes, we ship worldwide via DHL Express. All international orders are delivered within 3-5 business days."
+            question: "Are your diamonds certified?",
+            answer: "Every diamond above 0.3ct comes with a GIA or IGI certificate. We guarantee conflict-free sourcing and full traceability of all our gemstones."
         },
         {
-            question: "What is your return policy?",
-            answer: "We offer a 30-day return policy for all unworn items in original packaging. Return shipping is free for orders over €500."
+            question: "How do I find my ring size?",
+            answer: "We include a complimentary ring sizer with your first order. You can also visit any BECANÉ boutique for a professional fitting, or use our online sizing guide."
         },
         {
-            question: "Are the materials sustainable?",
-            answer: "Absolutely. We source organic cottons, recycled polyesters, and innovations like apple leather. Sustainability is at our core."
+            question: "How should I care for my jewellery?",
+            answer: "Store pieces individually in the provided pouches. Avoid contact with perfumes and chemicals. We recommend professional cleaning every 6 months — free for BECANÉ pieces at any of our boutiques."
         },
         {
-            question: "How do I care for my Becané pieces?",
-            answer: "Most items are dry clean only to preserve their structure. Specific care instructions are included on the label of each garment."
+            question: "Do you offer custom or bespoke pieces?",
+            answer: "Yes. Our master jewellers can create bespoke designs from concept to completion. Book a consultation through our Contact page — typical lead time is 6-8 weeks."
         }
     ];
 

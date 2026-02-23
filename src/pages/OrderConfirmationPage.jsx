@@ -110,7 +110,7 @@ const OrderConfirmationPage = () => {
                                         <span className="oc-item-qty">× {item.quantity}</span>
                                     </div>
                                     <span className="oc-item-price">
-                                        ${(item.price * item.quantity).toLocaleString()}
+                                        ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                                     </span>
                                 </div>
                             ))}
@@ -119,21 +119,21 @@ const OrderConfirmationPage = () => {
                         <div className="oc-totals">
                             <div className="oc-total-row">
                                 <span>Subtotal</span>
-                                <span>${order.subtotal.toLocaleString()}</span>
+                                <span>₹{order.subtotal.toLocaleString('en-IN')}</span>
                             </div>
                             {order.discount > 0 && (
                                 <div className="oc-total-row oc-discount">
                                     <span>Discount</span>
-                                    <span>−${order.discount.toLocaleString()}</span>
+                                    <span>−₹{order.discount.toLocaleString('en-IN')}</span>
                                 </div>
                             )}
                             <div className="oc-total-row">
                                 <span>Shipping</span>
-                                <span>{order.shipping === 0 ? 'Free' : `$${order.shipping}`}</span>
+                                <span>{order.shipping === 0 ? 'Free' : `₹${order.shipping}`}</span>
                             </div>
                             <div className="oc-total-row oc-grand-total">
                                 <span>Total</span>
-                                <span>${order.total.toLocaleString()}</span>
+                                <span>₹{order.total.toLocaleString('en-IN')}</span>
                             </div>
                         </div>
                     </div>

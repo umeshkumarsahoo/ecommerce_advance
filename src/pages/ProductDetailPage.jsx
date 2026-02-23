@@ -7,9 +7,59 @@ import { useWishlist } from '../context/WishlistContext';
 import { getProductById } from '../data/productData';
 
 // ═══════════════════════════════════════════════════════════════
-// ProductDetailPage — Premium product layout
+// ProductDetailPage — Premium Jewellery Product Layout
 // Left: large image + thumbnails | Right: details + actions
+// Includes: working accordions, review/rating system
 // ═══════════════════════════════════════════════════════════════
+
+// Jewellery-specific details & care content per category
+const CATEGORY_DETAILS = {
+    Rings: {
+        details: ['18K Gold / Platinum setting', 'GIA / IGI certified gemstones', 'Hallmarked & authenticated', 'Handcrafted by master jewellers', 'Presented in signature BECANÉ case'],
+        care: ['Remove before washing hands or swimming', 'Store in provided pouch to avoid scratches', 'Clean with warm soapy water and soft brush', 'Professional polishing recommended every 6 months', 'Avoid contact with perfumes and chemicals'],
+    },
+    Necklaces: {
+        details: ['18K Gold / Platinum chain', 'Precision-set gemstones', 'Lobster claw or spring ring clasp', 'Hallmarked & authenticated', 'Presented in signature BECANÉ case'],
+        care: ['Store flat or hanging to prevent tangling', 'Put on after applying perfume and makeup', 'Wipe gently with a soft cloth after wearing', 'Avoid sleeping with necklace on', 'Professional cleaning recommended annually'],
+    },
+    Bracelets: {
+        details: ['Premium metal construction', 'Secure clasp mechanism', 'Comfortable daily wear design', 'Hallmarked & authenticated', 'Presented in signature BECANÉ case'],
+        care: ['Remove before strenuous activity', 'Store individually to prevent scratching', 'Clean with jewellery-specific solution', 'Check clasp regularly for security', 'Avoid exposure to chlorine and saltwater'],
+    },
+    Earrings: {
+        details: ['Hypoallergenic posts', 'Secure butterfly or screw-back closure', 'Precision-set stones', 'Hallmarked & authenticated', 'Presented in signature BECANÉ case'],
+        care: ['Clean posts with rubbing alcohol regularly', 'Store in compartmented case', 'Remove before showering', 'Wipe with soft lint-free cloth', 'Avoid pulling or tugging on settings'],
+    },
+    Chains: {
+        details: ['Solid gold construction', 'Hand-finished links', 'Premium weight and feel', 'Hallmarked & authenticated', 'Presented in signature BECANÉ case'],
+        care: ['Store flat to prevent kinking', 'Clean with warm water and mild soap', 'Dry thoroughly before storing', 'Avoid wearing during physical activity', 'Professional maintenance every 12 months'],
+    },
+    Cufflinks: {
+        details: ['Premium metal construction', 'Toggle or whale-back mechanism', 'Precision gemstone setting', 'Hallmarked & authenticated', 'Presented in signature BECANÉ case'],
+        care: ['Store in dedicated cufflink box', 'Wipe clean after each wear', 'Avoid exposure to moisture', 'Polish with microfibre cloth', 'Check mechanism regularly'],
+    },
+    Anklets: {
+        details: ['Delicate gold construction', 'Adjustable lobster clasp', 'Lightweight comfort fit', 'Hallmarked & authenticated', 'Presented in signature BECANÉ case'],
+        care: ['Remove before swimming or bathing', 'Store flat in soft pouch', 'Clean gently with polishing cloth', 'Avoid contact with lotions', 'Check links for wear periodically'],
+    },
+};
+
+const DEFAULT_DETAILS = CATEGORY_DETAILS.Rings;
+
+// Seed reviews per product (static, stored in-memory per session)
+const INITIAL_REVIEWS = {
+    1: [
+        { id: 1, name: 'Priya M.', rating: 5, text: 'Absolutely stunning ring. The diamond catches light beautifully. Worth every penny.', date: '2026-01-15' },
+        { id: 2, name: 'Ananya S.', rating: 4, text: 'Beautiful craftsmanship. Took a while to deliver but the quality is impeccable.', date: '2026-01-10' },
+    ],
+    9: [
+        { id: 1, name: 'Rahul K.', rating: 5, text: 'The signet ring is a masterpiece. Heavy gold, beautiful engraving. My new daily wear.', date: '2026-02-01' },
+    ],
+    2: [
+        { id: 1, name: 'Meera R.', rating: 5, text: 'These pearls are divine. The lustre is unmatched. Perfect gift for my mother.', date: '2026-01-20' },
+    ],
+};
+
 
 function ProductDetailPage() {
     const { id } = useParams();
@@ -24,17 +74,34 @@ function ProductDetailPage() {
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(null);
     const [addedToCart, setAddedToCart] = useState(false);
+    const [openAccordion, setOpenAccordion] = useState(null);
     const wishlisted = product ? isWishlisted(product.id) : false;
+
+    // --- Review State ---
+    const [allReviews, setAllReviews] = useState(INITIAL_REVIEWS);
+    const [reviewRating, setReviewRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [reviewText, setReviewText] = useState('');
+    const [reviewName, setReviewName] = useState('');
+
+    const productReviews = allReviews[product?.id] || [];
+    const avgRating = productReviews.length > 0
+        ? (productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length).toFixed(1)
+        : product?.rating || 0;
 
     // Reset state when product changes
     useEffect(() => {
         setSelectedImage(0);
         setSelectedSize(null);
         setAddedToCart(false);
+        setOpenAccordion(null);
+        setReviewRating(0);
+        setReviewText('');
+        setReviewName('');
         window.scrollTo(0, 0);
     }, [id]);
 
-    // --- Star Rating ---
+    // --- Star Rating Display ---
     const renderStars = (rating) => {
         const full = Math.floor(rating);
         const half = rating % 1 >= 0.5;
@@ -44,6 +111,27 @@ function ProductDetailPage() {
         for (let i = stars.length; i < 5; i++) stars += '☆';
         return stars;
     };
+
+    // --- Interactive Star Rating ---
+    const StarSelector = ({ value, hover, onSelect, onHover, onLeave }) => (
+        <div style={{ display: 'flex', gap: '4px', cursor: 'pointer' }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                    key={star}
+                    onClick={() => onSelect(star)}
+                    onMouseEnter={() => onHover(star)}
+                    onMouseLeave={onLeave}
+                    style={{
+                        fontSize: '1.6rem',
+                        color: star <= (hover || value) ? '#D4AF37' : '#DEE4EF',
+                        transition: 'color 0.15s, transform 0.15s',
+                        transform: star <= (hover || value) ? 'scale(1.15)' : 'scale(1)',
+                        userSelect: 'none',
+                    }}
+                >★</span>
+            ))}
+        </div>
+    );
 
     // --- Add to Cart ---
     const handleAddToCart = () => {
@@ -64,6 +152,42 @@ function ProductDetailPage() {
         showToast(`${product.name} added to cart`, 'success');
         setTimeout(() => setAddedToCart(false), 2500);
     };
+
+    // --- Submit Review ---
+    const handleSubmitReview = (e) => {
+        e.preventDefault();
+        if (reviewRating === 0) {
+            showToast('Please select a star rating', 'error');
+            return;
+        }
+        if (!reviewText.trim()) {
+            showToast('Please write your review', 'error');
+            return;
+        }
+        const newReview = {
+            id: Date.now(),
+            name: reviewName.trim() || 'Anonymous',
+            rating: reviewRating,
+            text: reviewText.trim(),
+            date: new Date().toISOString().split('T')[0],
+        };
+        setAllReviews((prev) => ({
+            ...prev,
+            [product.id]: [...(prev[product.id] || []), newReview],
+        }));
+        setReviewRating(0);
+        setReviewText('');
+        setReviewName('');
+        showToast('Thank you for your review!', 'success');
+    };
+
+    // --- Accordion toggle ---
+    const toggleAccordion = (key) => {
+        setOpenAccordion(openAccordion === key ? null : key);
+    };
+
+    // Get category-specific details
+    const categoryInfo = CATEGORY_DETAILS[product?.category] || DEFAULT_DETAILS;
 
     return (
         <div style={s.page}>
@@ -120,12 +244,13 @@ function ProductDetailPage() {
 
                     {/* Rating */}
                     <div style={s.ratingRow}>
-                        <span style={s.stars}>{renderStars(product.rating)}</span>
-                        <span style={s.ratingNum}>{product.rating}</span>
+                        <span style={s.stars}>{renderStars(Number(avgRating))}</span>
+                        <span style={s.ratingNum}>{avgRating}</span>
+                        <span style={{ fontSize: '0.75rem', color: '#5A6B80' }}>({productReviews.length} review{productReviews.length !== 1 ? 's' : ''})</span>
                     </div>
 
                     {/* Price */}
-                    <p style={s.price}>€{product.price.toLocaleString()}</p>
+                    <p style={s.price}>₹{product.price.toLocaleString('en-IN')}</p>
 
                     {/* Divider */}
                     <div style={s.divider} />
@@ -189,21 +314,178 @@ function ProductDetailPage() {
                     {/* Divider */}
                     <div style={s.divider} />
 
-                    {/* Accordions */}
-                    <div style={s.accordion}>
-                        <span style={s.accordionLabel}>Details & Care</span>
-                        <span style={s.accordionIcon}>+</span>
+                    {/* ═══ ACCORDION: Details ═══ */}
+                    <div
+                        style={s.accordion}
+                        onClick={() => toggleAccordion('details')}
+                    >
+                        <span style={s.accordionLabel}>Product Details</span>
+                        <span style={{
+                            ...s.accordionIcon,
+                            transform: openAccordion === 'details' ? 'rotate(45deg)' : 'rotate(0)',
+                            transition: 'transform 0.3s ease',
+                        }}>+</span>
                     </div>
-                    <div style={s.accordion}>
+                    <div style={{
+                        maxHeight: openAccordion === 'details' ? '300px' : '0',
+                        overflow: 'hidden',
+                        transition: 'max-height 0.4s ease',
+                    }}>
+                        <ul style={s.accordionContent}>
+                            {categoryInfo.details.map((item, i) => (
+                                <li key={i} style={s.accordionItem}>{item}</li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* ═══ ACCORDION: Care ═══ */}
+                    <div
+                        style={s.accordion}
+                        onClick={() => toggleAccordion('care')}
+                    >
+                        <span style={s.accordionLabel}>Care Instructions</span>
+                        <span style={{
+                            ...s.accordionIcon,
+                            transform: openAccordion === 'care' ? 'rotate(45deg)' : 'rotate(0)',
+                            transition: 'transform 0.3s ease',
+                        }}>+</span>
+                    </div>
+                    <div style={{
+                        maxHeight: openAccordion === 'care' ? '300px' : '0',
+                        overflow: 'hidden',
+                        transition: 'max-height 0.4s ease',
+                    }}>
+                        <ul style={s.accordionContent}>
+                            {categoryInfo.care.map((item, i) => (
+                                <li key={i} style={s.accordionItem}>{item}</li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* ═══ ACCORDION: Shipping ═══ */}
+                    <div
+                        style={s.accordion}
+                        onClick={() => toggleAccordion('shipping')}
+                    >
                         <span style={s.accordionLabel}>Shipping & Returns</span>
-                        <span style={s.accordionIcon}>+</span>
+                        <span style={{
+                            ...s.accordionIcon,
+                            transform: openAccordion === 'shipping' ? 'rotate(45deg)' : 'rotate(0)',
+                            transition: 'transform 0.3s ease',
+                        }}>+</span>
+                    </div>
+                    <div style={{
+                        maxHeight: openAccordion === 'shipping' ? '300px' : '0',
+                        overflow: 'hidden',
+                        transition: 'max-height 0.4s ease',
+                    }}>
+                        <ul style={s.accordionContent}>
+                            <li style={s.accordionItem}>Complimentary insured shipping worldwide</li>
+                            <li style={s.accordionItem}>Delivery within 3–5 business days</li>
+                            <li style={s.accordionItem}>30-day return policy for unworn pieces</li>
+                            <li style={s.accordionItem}>Free return shipping on all orders</li>
+                            <li style={s.accordionItem}>Certificate of authenticity included</li>
+                        </ul>
                     </div>
 
                     {/* Trust Badges */}
                     <div style={s.trustRow}>
                         <span>🔒 Secure Checkout</span>
-                        <span>📦 Free Returns</span>
-                        <span>✨ Authentic</span>
+                        <span>📦 Free Shipping</span>
+                        <span>💎 GIA Certified</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* REVIEWS SECTION — Full width below product */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            <div style={s.reviewsSection}>
+                <div style={s.reviewsContainer}>
+                    <h2 style={s.reviewsTitle}>Customer Reviews</h2>
+
+                    {/* Rating Summary */}
+                    <div style={s.ratingSummary}>
+                        <div style={s.ratingBig}>
+                            <span style={{ fontSize: '3rem', fontWeight: 700, color: '#0C2340', lineHeight: 1 }}>{avgRating}</span>
+                            <span style={{ fontSize: '0.85rem', color: '#5A6B80', marginTop: '0.25rem' }}>out of 5</span>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '1.3rem', color: '#D4AF37', letterSpacing: '3px', marginBottom: '0.25rem' }}>{renderStars(Number(avgRating))}</div>
+                            <span style={{ fontSize: '0.82rem', color: '#5A6B80' }}>Based on {productReviews.length} review{productReviews.length !== 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+
+                    <div style={s.divider} />
+
+                    {/* Existing Reviews */}
+                    {productReviews.length > 0 ? (
+                        <div style={s.reviewsList}>
+                            {productReviews.map((review) => (
+                                <div key={review.id} style={s.reviewCard}>
+                                    <div style={s.reviewHeader}>
+                                        <div style={s.reviewAvatar}>{review.name.charAt(0).toUpperCase()}</div>
+                                        <div>
+                                            <p style={s.reviewAuthor}>{review.name}</p>
+                                            <p style={s.reviewDate}>{review.date}</p>
+                                        </div>
+                                        <span style={s.reviewStars}>{renderStars(review.rating)}</span>
+                                    </div>
+                                    <p style={s.reviewBody}>{review.text}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p style={{ color: '#5A6B80', fontSize: '0.9rem', marginBottom: '2rem' }}>No reviews yet. Be the first to share your experience!</p>
+                    )}
+
+                    <div style={s.divider} />
+
+                    {/* Write a Review Form */}
+                    <div style={s.writeReview}>
+                        <h3 style={s.writeReviewTitle}>Write a Review</h3>
+                        <form onSubmit={handleSubmitReview} style={s.reviewForm}>
+                            {/* Star Rating */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={s.formLabel}>Your Rating</label>
+                                <StarSelector
+                                    value={reviewRating}
+                                    hover={hoverRating}
+                                    onSelect={setReviewRating}
+                                    onHover={setHoverRating}
+                                    onLeave={() => setHoverRating(0)}
+                                />
+                            </div>
+
+                            {/* Name */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={s.formLabel}>Your Name (optional)</label>
+                                <input
+                                    type="text"
+                                    value={reviewName}
+                                    onChange={(e) => setReviewName(e.target.value)}
+                                    placeholder="Enter your name"
+                                    style={s.formInput}
+                                />
+                            </div>
+
+                            {/* Review Text */}
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <label style={s.formLabel}>Your Review</label>
+                                <textarea
+                                    value={reviewText}
+                                    onChange={(e) => setReviewText(e.target.value)}
+                                    placeholder="Share your experience with this piece..."
+                                    rows={4}
+                                    style={s.formTextarea}
+                                />
+                            </div>
+
+                            {/* Submit */}
+                            <button type="submit" style={s.submitBtn}>
+                                Submit Review
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -254,7 +536,7 @@ const s = {
     layout: {
         maxWidth: '1440px',
         margin: '0 auto',
-        padding: '0 5vw 80px',
+        padding: '0 5vw 40px',
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gap: '4rem',
@@ -334,7 +616,7 @@ const s = {
     },
     stars: {
         fontSize: '0.9rem',
-        color: '#4F7DB5',
+        color: '#D4AF37',
         letterSpacing: '2px',
     },
     ratingNum: {
@@ -448,20 +730,34 @@ const s = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '0.75rem 0',
+        padding: '0.85rem 0',
         cursor: 'pointer',
         borderBottom: '1px solid #DEE4EF',
     },
     accordionLabel: {
-        fontSize: '0.75rem',
+        fontSize: '0.78rem',
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.1em',
         color: '#0C2340',
     },
     accordionIcon: {
-        fontSize: '1rem',
+        fontSize: '1.1rem',
         color: '#5A6B80',
+        display: 'inline-block',
+    },
+    accordionContent: {
+        padding: '0.75rem 0 0.5rem 1.25rem',
+        margin: 0,
+        listStyle: 'none',
+    },
+    accordionItem: {
+        fontSize: '0.82rem',
+        color: '#5A6B80',
+        lineHeight: 1.6,
+        padding: '0.2rem 0',
+        position: 'relative',
+        paddingLeft: '1rem',
     },
 
     // Trust
@@ -473,6 +769,160 @@ const s = {
         color: '#5A6B80',
         fontSize: '0.7rem',
         letterSpacing: '0.05em',
+    },
+
+    // ═══════════════════════════════════════════════════════════
+    // REVIEWS SECTION
+    // ═══════════════════════════════════════════════════════════
+    reviewsSection: {
+        maxWidth: '1440px',
+        margin: '0 auto',
+        padding: '0 5vw 80px',
+    },
+    reviewsContainer: {
+        backgroundColor: '#fff',
+        borderRadius: '16px',
+        padding: 'clamp(2rem, 4vw, 3.5rem)',
+        border: '1px solid #DEE4EF',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+    },
+    reviewsTitle: {
+        fontFamily: "'Instrument Sans', sans-serif",
+        fontSize: '1.5rem',
+        fontWeight: 700,
+        color: '#0C2340',
+        marginBottom: '1.5rem',
+        letterSpacing: '-0.01em',
+    },
+    ratingSummary: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1.5rem',
+        marginBottom: '0.5rem',
+    },
+    ratingBig: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '1rem 1.5rem',
+        backgroundColor: '#F6F4FA',
+        borderRadius: '12px',
+    },
+
+    // Review Cards
+    reviewsList: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.25rem',
+        marginBottom: '0.5rem',
+    },
+    reviewCard: {
+        padding: '1.25rem',
+        borderRadius: '10px',
+        backgroundColor: '#FAFAFE',
+        border: '1px solid #EEEDF5',
+    },
+    reviewHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        marginBottom: '0.75rem',
+    },
+    reviewAvatar: {
+        width: '38px',
+        height: '38px',
+        borderRadius: '50%',
+        backgroundColor: '#4F7DB5',
+        color: '#fff',
+        display: 'grid',
+        placeItems: 'center',
+        fontWeight: 700,
+        fontSize: '0.85rem',
+        flexShrink: 0,
+    },
+    reviewAuthor: {
+        fontWeight: 600,
+        fontSize: '0.85rem',
+        color: '#0C2340',
+        marginBottom: '0.1rem',
+    },
+    reviewDate: {
+        fontSize: '0.72rem',
+        color: '#5A6B80',
+    },
+    reviewStars: {
+        marginLeft: 'auto',
+        fontSize: '0.85rem',
+        color: '#D4AF37',
+        letterSpacing: '2px',
+    },
+    reviewBody: {
+        fontSize: '0.88rem',
+        color: '#5A6B80',
+        lineHeight: 1.6,
+    },
+
+    // Write Review Form
+    writeReview: {
+        marginTop: '0.5rem',
+    },
+    writeReviewTitle: {
+        fontFamily: "'Instrument Sans', sans-serif",
+        fontSize: '1.1rem',
+        fontWeight: 600,
+        color: '#0C2340',
+        marginBottom: '1.25rem',
+    },
+    reviewForm: {
+        maxWidth: '600px',
+    },
+    formLabel: {
+        display: 'block',
+        fontSize: '0.75rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        color: '#5A6B80',
+        marginBottom: '0.5rem',
+    },
+    formInput: {
+        width: '100%',
+        padding: '0.75rem 1rem',
+        border: '1px solid #DEE4EF',
+        borderRadius: '8px',
+        fontSize: '0.88rem',
+        color: '#0C2340',
+        backgroundColor: '#FAFAFE',
+        outline: 'none',
+        transition: 'border-color 0.2s',
+        boxSizing: 'border-box',
+    },
+    formTextarea: {
+        width: '100%',
+        padding: '0.75rem 1rem',
+        border: '1px solid #DEE4EF',
+        borderRadius: '8px',
+        fontSize: '0.88rem',
+        color: '#0C2340',
+        backgroundColor: '#FAFAFE',
+        outline: 'none',
+        resize: 'vertical',
+        fontFamily: 'inherit',
+        transition: 'border-color 0.2s',
+        boxSizing: 'border-box',
+    },
+    submitBtn: {
+        padding: '0.85rem 2.5rem',
+        backgroundColor: '#4F7DB5',
+        color: '#FFFFFF',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '0.82rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        cursor: 'pointer',
+        transition: 'background-color 0.25s ease',
     },
 };
 
@@ -489,6 +939,25 @@ const responsiveCSS = `
         .pdp-info {
             position: static !important;
         }
+    }
+
+    /* Accordion bullet points */
+    .pdp-info li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: #4F7DB5;
+        font-weight: 700;
+    }
+
+    /* Form focus states */
+    input:focus, textarea:focus {
+        border-color: #4F7DB5 !important;
+    }
+
+    /* Submit button hover */
+    button[type="submit"]:hover {
+        background-color: #3B6A9E !important;
     }
 `;
 

@@ -22,18 +22,18 @@ const NivoraTeam = () => {
     const sectionRef = useRef(null);
 
     const team = [
-        { name: "Alexander V.", role: "Creative Director", img: img1 },
-        { name: "Isabella R.", role: "Head of Atelier", img: img2 },
-        { name: "Marcus L.", role: "Lead Architect", img: img3 },
-        { name: "Sarah K.", role: "Brand Strategy", img: img4 }
+        { name: "Alexander V.", role: "Master Jeweller", img: img1 },
+        { name: "Isabella R.", role: "Head Gemologist", img: img2 },
+        { name: "Marcus L.", role: "Lead Goldsmith", img: img3 },
+        { name: "Sarah K.", role: "Design Curator", img: img4 }
     ];
 
     return (
         <section ref={sectionRef} className="section team-section">
             <div className="container">
                 <div className="text-center mb-16">
-                    <p className="text-eyebrow mb-4">The Visionaries</p>
-                    <h2 className="text-h2">CREATIVE MINDS</h2>
+                    <p className="text-eyebrow mb-4">Master Artisans</p>
+                    <h2 className="text-h2">OUR CRAFTSMEN</h2>
                 </div>
                 <div className="grid-4">
                     {team.map((member, index) => (

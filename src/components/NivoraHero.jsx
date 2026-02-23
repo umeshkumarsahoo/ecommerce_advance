@@ -77,18 +77,18 @@ const NivoraHero = () => {
                 </div> */}
 
                 <div className="hero-title">
-                    <div className="hero-line hero-word hero-word-left">LUXURY</div>
-                    <div className="hero-line hero-word hero-gradient">BEYOND</div>
-                    <div className="hero-line hero-word hero-word-right">REALITY</div>
+                    <div className="hero-line hero-word hero-word-left">TIMELESS</div>
+                    <div className="hero-line hero-word hero-gradient">CRAFTED</div>
+                    <div className="hero-line hero-word hero-word-right">ELEGANCE</div>
                 </div>
 
                 <div className="hero-bottom">
                     <p className="hero-subtitle">
-                        We craft digital experiences that transcend the ordinary.
-                        Where fashion meets the future.
+                        Where artistry meets precious metals and gemstones.
+                        Jewellery crafted for eternity.
                     </p>
-                    <button className="hero-cta nivora-btn nivora-btn-accent">
-                        Explore Collection
+                    <button className="hero-cta nivora-btn nivora-btn-accent" onClick={() => window.location.href = '/collections'}>
+                        Discover the Collection
                     </button>
                 </div>
             </div>

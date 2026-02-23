@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
-import { PRODUCTS, CATEGORIES } from '../data/productData';
+import { PRODUCTS, CATEGORIES, GENDERS, GENDER_CATEGORIES } from '../data/productData';
 import SkeletonGrid from '../components/SkeletonLoader';
 
 // ═══════════════════════════════════════════════════════════════
@@ -13,7 +13,7 @@ import SkeletonGrid from '../components/SkeletonLoader';
 // No boxed/card filter UI — blends with page background
 // ═══════════════════════════════════════════════════════════════
 
-const FILTER_CATEGORIES = ['Men', 'Women', 'New Arrivals', 'Sale'];
+const FILTER_CATEGORIES = CATEGORIES;
 
 function CollectionsPage() {
     const navigate = useNavigate();
@@ -24,6 +24,7 @@ function CollectionsPage() {
 
     // --- Filter State ---
     const [selectedCategories, setSelectedCategories] = useState([]);
+    const [selectedGender, setSelectedGender] = useState('');
     const [sortBy, setSortBy] = useState('newest');
     const [priceMin, setPriceMin] = useState('');
     const [priceMax, setPriceMax] = useState('');
@@ -54,6 +55,9 @@ function CollectionsPage() {
     // --- Filtering Logic ---
     const getFilteredProducts = () => {
         let filtered = [...PRODUCTS];
+        if (selectedGender) {
+            filtered = filtered.filter((p) => p.gender === selectedGender);
+        }
         if (selectedCategories.length > 0) {
             filtered = filtered.filter((p) => selectedCategories.includes(p.category));
         }
@@ -66,10 +70,11 @@ function CollectionsPage() {
     };
 
     const filteredProducts = getFilteredProducts();
-    const activeFilterCount = selectedCategories.length + (priceMin ? 1 : 0) + (priceMax ? 1 : 0) + (inStockOnly ? 1 : 0);
+    const activeFilterCount = selectedCategories.length + (selectedGender ? 1 : 0) + (priceMin ? 1 : 0) + (priceMax ? 1 : 0) + (inStockOnly ? 1 : 0);
 
     const clearAllFilters = () => {
         setSelectedCategories([]);
+        setSelectedGender('');
         setPriceMin('');
         setPriceMax('');
         setInStockOnly(false);
@@ -105,21 +110,69 @@ function CollectionsPage() {
     // ═══════════════════════════════════════════════════════════
     const filterContent = (
         <>
-            {/* Category — Checkboxes */}
+            {/* Gender → Category: Expandable List / Sublist */}
             <div style={f.section}>
-                <h4 style={f.sectionTitle}>Category</h4>
-                <div style={f.checkboxList}>
-                    {FILTER_CATEGORIES.map((cat) => (
-                        <label key={cat} style={f.checkboxRow}>
-                            <input
-                                type="checkbox"
-                                checked={selectedCategories.includes(cat)}
-                                onChange={() => toggleCategory(cat)}
-                                style={f.checkboxInput}
-                            />
-                            <span style={f.checkboxLabel}>{cat}</span>
-                        </label>
-                    ))}
+                <h4 style={f.sectionTitle}>Shop By</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    {GENDERS.map((g) => {
+                        const isExpanded = selectedGender === g;
+                        const subCats = GENDER_CATEGORIES[g];
+                        return (
+                            <div key={g} style={{ borderBottom: '1px solid #DEE4EF' }}>
+                                {/* Gender Header — clickable */}
+                                <button
+                                    onClick={() => {
+                                        setSelectedGender(isExpanded ? '' : g);
+                                        setSelectedCategories([]);
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        width: '100%',
+                                        padding: '14px 0',
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        color: isExpanded ? '#4F7DB5' : '#0C2340',
+                                        fontWeight: 600,
+                                        fontSize: '0.92rem',
+                                        letterSpacing: '0.03em',
+                                        transition: 'color 0.2s',
+                                    }}
+                                >
+                                    <span>{g}</span>
+                                    <span style={{
+                                        fontSize: '0.7rem',
+                                        transition: 'transform 0.3s ease',
+                                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)',
+                                        color: '#5A6B80',
+                                    }}>▼</span>
+                                </button>
+
+                                {/* Sub-categories — slide open */}
+                                <div style={{
+                                    maxHeight: isExpanded ? `${subCats.length * 38 + 10}px` : '0',
+                                    overflow: 'hidden',
+                                    transition: 'max-height 0.35s ease',
+                                    paddingLeft: '1rem',
+                                }}>
+                                    {subCats.map((cat) => (
+                                        <label key={cat} style={{ ...f.checkboxRow, padding: '6px 0' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedCategories.includes(cat)}
+                                                onChange={() => toggleCategory(cat)}
+                                                style={f.checkboxInput}
+                                            />
+                                            <span style={f.checkboxLabel}>{cat}</span>
+                                        </label>
+                                    ))}
+                                    <div style={{ height: '8px' }} />
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -199,7 +252,7 @@ function CollectionsPage() {
             {/* Hero */}
             <section style={s.hero}>
                 <h1 style={s.heroTitle}>Our Collections</h1>
-                <p style={s.heroSub}>Curated pieces designed for those who appreciate the art of dressing well.</p>
+                <p style={s.heroSub}>Handcrafted jewellery for those who appreciate timeless artistry.</p>
             </section>
 
             {/* Mobile Filter Toggle */}
@@ -298,7 +351,7 @@ function CollectionsPage() {
                                         <h3 style={s.cardName}>{product.name}</h3>
                                         <div style={s.cardMeta}>
                                             <span style={s.cardStars}>{renderStars(product.rating)}</span>
-                                            <span style={s.cardPrice}>€{product.price.toLocaleString()}</span>
+                                            <span style={s.cardPrice}>₹{product.price.toLocaleString('en-IN')}</span>
                                         </div>
                                         <button
                                             onClick={(e) => handleAddToCart(e, product)}

@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 
 // Local Assets
 import img1 from '../assets/images/gallery-1.jpg';
@@ -13,28 +17,49 @@ import img6 from '../assets/images/gallery-6.jpg';
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * NivoraGallery - Hybrid Product Grid
+ * NivoraGallery - Jewellery Product Grid
  * 
- * FINAL PERFORMANCE:
- * - Uses local assets
+ * Actionable "Add to Cart" buttons wired to CartContext
  */
 const NivoraGallery = () => {
     const galleryRef = useRef(null);
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
+    const { addToCart } = useCart();
+    const { showToast } = useToast();
 
     const products = [
-        { id: 1, name: "Noir Trench", category: "Outerwear", price: "€850", image: img1 },
-        { id: 2, name: "Lumina Dress", category: "Dresses", price: "€1,200", image: img2 },
-        { id: 3, name: "Obsidian Bag", category: "Clothing", price: "€2,400", image: img3 },
-        { id: 4, name: "Eclipse Boot", category: "Footwear", price: "€950", image: img4 },
-        { id: 5, name: "Solaris Jacket", category: "Outerwear", price: "€1,100", image: img5 },
-        { id: 6, name: "Void Silk", category: "Tops", price: "€450", image: img6 },
-        { id: 7, name: "Midnight Blazer", category: "Outerwear", price: "€780", image: img1 },
-        { id: 8, name: "Prism Scarf", category: "Clothing", price: "€320", image: img2 },
-        { id: 9, name: "Shadow Loafer", category: "Footwear", price: "€620", image: img3 },
-        { id: 10, name: "Onyx Gown", category: "Dresses", price: "€1,850", image: img4 },
-        { id: 11, name: "Carbon Tee", category: "Tops", price: "€280", image: img5 },
-        { id: 12, name: "Nebula Coat", category: "Outerwear", price: "€1,450", image: img6 }
+        { id: 1, name: "Diamond Solitaire Ring", category: "Women · Rings", price: "₹3,75,000", numPrice: 375000, image: img1 },
+        { id: 9, name: "Gold Signet Ring", category: "Men · Rings", price: "₹1,55,000", numPrice: 155000, image: img2 },
+        { id: 2, name: "Pearl Strand Necklace", category: "Women · Necklaces", price: "₹2,45,000", numPrice: 245000, image: img3 },
+        { id: 10, name: "Cuban Link Chain", category: "Men · Chains", price: "₹4,25,000", numPrice: 425000, image: img4 },
+        { id: 3, name: "Emerald Tennis Bracelet", category: "Women · Bracelets", price: "₹4,99,000", numPrice: 499000, image: img5 },
+        { id: 11, name: "Diamond Cufflinks", category: "Men · Cufflinks", price: "₹1,89,000", numPrice: 189000, image: img6 },
+        { id: 4, name: "Diamond Drop Earrings", category: "Women · Earrings", price: "₹2,95,000", numPrice: 295000, image: img1 },
+        { id: 12, name: "Leather & Gold Bracelet", category: "Men · Bracelets", price: "₹1,05,000", numPrice: 105000, image: img2 },
+        { id: 7, name: "Sapphire Pendant", category: "Women · Necklaces", price: "₹2,75,000", numPrice: 275000, image: img3 },
+        { id: 13, name: "Onyx Band Ring", category: "Men · Rings", price: "₹82,000", numPrice: 82000, image: img4 },
+        { id: 8, name: "Diamond Huggie Earrings", category: "Women · Earrings", price: "₹1,39,000", numPrice: 139000, image: img5 },
+        { id: 16, name: "Black Diamond Studs", category: "Men · Earrings", price: "₹1,19,000", numPrice: 119000, image: img6 }
     ];
+
+    const handleAddToCart = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAuthenticated) {
+            showToast('Please login to add items to cart', 'error');
+            navigate('/login');
+            return;
+        }
+        addToCart({
+            id: product.id,
+            name: product.name,
+            price: product.numPrice,
+            category: product.category,
+            image: product.image,
+        });
+        showToast(`${product.name} added to cart`, 'success');
+    };
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -55,21 +80,21 @@ const NivoraGallery = () => {
         <section ref={galleryRef} className="section gallery-section">
             <div className="container">
                 <div className="gallery-header flex-between mb-12">
-                    <h2 className="text-h2">PHYSICAL<br />PRODUCTS</h2>
+                    <h2 className="text-h2">FINE<br />JEWELLERY</h2>
                     <div className="gallery-cta">
-                        <button className="nivora-btn">View All</button>
+                        <button className="nivora-btn" onClick={() => navigate('/collections')}>View All</button>
                     </div>
                 </div>
 
                 <div className="grid-3">
                     {products.map((product) => (
-                        <div key={product.id} className="nivora-card gallery-card">
+                        <div key={product.id} className="nivora-card gallery-card" onClick={() => navigate(`/product/${product.id}`)} style={{ cursor: 'pointer' }}>
                             <div className="card-image-wrap">
                                 <img
                                     src={product.image} alt={product.name} className="card-image" loading="lazy"
                                 />
                                 <div className="card-overlay">
-                                    <button className="add-btn">Add to Cart</button>
+                                    <button className="add-btn" onClick={(e) => handleAddToCart(e, product)}>Add to Cart</button>
                                 </div>
                             </div>
                             <div className="card-info flex-between">
@@ -100,6 +125,7 @@ const NivoraGallery = () => {
                     border-radius: 99px; font-weight: 600; text-transform: uppercase;
                     letter-spacing: 0.1em; font-size: 0.75rem;
                     transform: translateY(20px); transition: transform 0.4s ease;
+                    cursor: pointer; border: none;
                 }
                 .nivora-card:hover .add-btn { transform: translateY(0); }
                 .card-price { font-family: var(--font-display); font-size: 1rem; color: var(--text-primary); }

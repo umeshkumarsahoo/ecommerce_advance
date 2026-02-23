@@ -281,7 +281,7 @@ function CartPage() {
                                             fontSize: '1.2rem',
                                             color: 'var(--color-accent)'
                                         }}>
-                                            ${(item.price * item.quantity).toLocaleString()}
+                                            ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                                         </p>
                                         {item.quantity > 1 && (
                                             <p style={{
@@ -289,7 +289,7 @@ function CartPage() {
                                                 color: 'var(--color-text-muted)',
                                                 marginTop: '0.25rem'
                                             }}>
-                                                ${item.price.toLocaleString()} each
+                                                ₹{item.price.toLocaleString('en-IN')} each
                                             </p>
                                         )}
                                     </div>
@@ -358,14 +358,14 @@ function CartPage() {
                                     justifyContent: 'space-between'
                                 }}>
                                     <span style={{ color: 'var(--color-text-muted)' }}>Subtotal</span>
-                                    <span>${cartSubtotal.toLocaleString()}</span>
+                                    <span>₹{cartSubtotal.toLocaleString('en-IN')}</span>
                                 </div>
                                 <div style={{
                                     display: 'flex',
                                     justifyContent: 'space-between'
                                 }}>
                                     <span style={{ color: 'var(--color-text-muted)' }}>Shipping</span>
-                                    <span>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                                    <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
                                 </div>
                                 {shipping === 0 && (
                                     <p style={{
@@ -373,7 +373,7 @@ function CartPage() {
                                         color: '#22c55e',
                                         textAlign: 'right'
                                     }}>
-                                        ✓ Free shipping on orders over $500
+                                        ✓ Free shipping on orders over ₹50,000
                                     </p>
                                 )}
                             </div>
@@ -395,7 +395,7 @@ function CartPage() {
                                     fontSize: '1.3rem',
                                     color: 'var(--color-accent)'
                                 }}>
-                                    ${cartTotal.toLocaleString()}
+                                    ₹{cartTotal.toLocaleString('en-IN')}
                                 </span>
                             </div>
 

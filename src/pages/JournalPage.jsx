@@ -11,43 +11,43 @@ const articles = [
     {
         id: 1,
         category: 'Editorial',
-        title: 'The Art of Quiet Luxury',
-        excerpt: 'In a world of noise, true elegance whispers. Exploring the philosophy of understated refinement.',
-        date: 'January 2026',
-        image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200',
+        title: 'The Art of Diamond Cutting',
+        excerpt: 'From rough stone to radiant fire — the centuries-old craft that transforms nature into brilliance.',
+        date: 'February 2026',
+        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=1200',
         featured: true
     },
     {
         id: 2,
         category: 'Craftsmanship',
-        title: 'Hands That Shape Heritage',
-        excerpt: 'Behind every piece lies a story of dedication, skill, and generations of knowledge passed down.',
+        title: 'Heritage of Gold Crafting',
+        excerpt: 'Behind every piece lies generations of knowledge — hands that shape molten gold into wearable art.',
         date: 'January 2026',
-        image: 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800'
+        image: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6c3?w=800'
     },
     {
         id: 3,
-        category: 'Culture',
-        title: 'Tokyo After Dark',
-        excerpt: 'The city transforms as evening falls. A visual journey through nocturnal elegance.',
-        date: 'December 2025',
-        image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800'
+        category: 'Innovation',
+        title: 'The Lab-Grown Revolution',
+        excerpt: 'How science is reshaping the diamond industry without compromising on brilliance or beauty.',
+        date: 'January 2026',
+        image: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800'
     },
     {
         id: 4,
         category: 'Design',
-        title: 'Minimalism Redefined',
-        excerpt: 'Less becomes more when intention guides every decision. The new language of modern design.',
+        title: 'Minimalist Jewellery Movement',
+        excerpt: 'Less becomes more when intention guides every decision. The new language of modern adornment.',
         date: 'December 2025',
-        image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800'
+        image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800'
     },
     {
         id: 5,
-        category: 'Travel',
-        title: 'The Amalfi Light',
-        excerpt: 'Where Mediterranean warmth meets timeless sophistication. A journey through coastal beauty.',
-        date: 'November 2025',
-        image: 'https://images.unsplash.com/photo-1534008897995-27a23e859048?w=800'
+        category: 'Culture',
+        title: 'Gemstones of the World',
+        excerpt: 'From Burmese rubies to Colombian emeralds — a journey through the origins of the earth\'s most precious stones.',
+        date: 'December 2025',
+        image: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=800'
     }
 ];
 

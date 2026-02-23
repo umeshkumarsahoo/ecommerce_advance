@@ -104,7 +104,7 @@ function WishlistPage() {
                                 <div style={s.cardInfo}>
                                     <span style={s.cardCategory}>{item.category}</span>
                                     <Link to={`/product/${item.id}`} style={s.cardName}>{item.name}</Link>
-                                    <span style={s.cardPrice}>€{item.price.toLocaleString()}</span>
+                                    <span style={s.cardPrice}>₹{item.price.toLocaleString('en-IN')}</span>
                                     <div style={s.cardActions}>
                                         <button
                                             style={s.addToCartBtn}
