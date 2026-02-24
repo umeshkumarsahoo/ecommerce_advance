@@ -3,66 +3,62 @@ import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useOrders } from '../context/OrderContext';
+import { useToast } from '../context/ToastContext';
 import LuxuryButton from '../components/LuxuryButton';
 
 /**
- * PaymentPage - Checkout with payment options and order summary
+ * PaymentPage → Simplified Checkout (No Payment Gateway)
+ *
+ * - Shipping address form
+ * - Order summary with coupon support
+ * - SuperCoin redeem toggle
+ * - Single "Place Order" button → Thank You page
  */
 function PaymentPage() {
     const { cartItems, cartSubtotal, shipping, cartTotal, clearCart } = useCart();
-    const { isAuthenticated } = useAuth();
+    const { user, isVIP } = useAuth();
+    const { superCoins, placeOrder } = useOrders();
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const containerRef = useRef(null);
 
-    const [paymentMethod, setPaymentMethod] = useState('card');
+    const [isProcessing, setIsProcessing] = useState(false);
     const [couponCode, setCouponCode] = useState('');
     const [discount, setDiscount] = useState(0);
     const [couponApplied, setCouponApplied] = useState(false);
-    const [orderPlaced, setOrderPlaced] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(false);
+    const [useCoins, setUseCoins] = useState(false);
 
     const [formData, setFormData] = useState({
-        email: '',
-        firstName: '',
-        lastName: '',
+        email: user?.email || '',
+        firstName: user?.name?.split(' ')[0] || '',
+        lastName: user?.name?.split(' ').slice(1).join(' ') || '',
         address: '',
         city: '',
         country: 'India',
         zip: '',
-        cardNumber: '',
-        expiry: '',
-        cvv: ''
     });
 
     // Redirect if cart is empty
     useEffect(() => {
-        if (cartItems.length === 0 && !orderPlaced) {
+        if (cartItems.length === 0) {
             navigate('/cart');
         }
-    }, [cartItems, navigate, orderPlaced]);
+    }, [cartItems, navigate]);
 
+    // GSAP entrance
     useEffect(() => {
         const ctx = gsap.context(() => {
             gsap.set('.checkout-section', { opacity: 0, y: 30 });
             gsap.set('.order-summary-side', { opacity: 0, x: 30 });
 
             const tl = gsap.timeline({ delay: 0.2 });
-
             tl.to('.checkout-section', {
-                opacity: 1,
-                y: 0,
-                duration: 0.6,
-                stagger: 0.15,
-                ease: 'power3.out'
-            })
-                .to('.order-summary-side', {
-                    opacity: 1,
-                    x: 0,
-                    duration: 0.8,
-                    ease: 'power3.out'
-                }, '-=0.4');
+                opacity: 1, y: 0, duration: 0.6, stagger: 0.15, ease: 'power3.out',
+            }).to('.order-summary-side', {
+                opacity: 1, x: 0, duration: 0.8, ease: 'power3.out',
+            }, '-=0.4');
         }, containerRef);
-
         return () => ctx.revert();
     }, []);
 
@@ -70,123 +66,71 @@ function PaymentPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Coupon logic
     const applyCoupon = () => {
-        // Demo coupon codes
-        const coupons = {
-            'LUXURY10': 10,
-            'MEMBER20': 20,
-            'VIP30': 30
-        };
-
+        const coupons = { LUXURY10: 10, MEMBER20: 20, VIP30: 30 };
         if (coupons[couponCode.toUpperCase()]) {
-            const discountPercent = coupons[couponCode.toUpperCase()];
-            setDiscount(Math.round(cartSubtotal * (discountPercent / 100)));
+            const pct = coupons[couponCode.toUpperCase()];
+            setDiscount(Math.round(cartSubtotal * (pct / 100)));
             setCouponApplied(true);
-            gsap.to('.coupon-success', { opacity: 1, duration: 0.3 });
         } else {
-            gsap.to('.coupon-error', {
-                opacity: 1,
-                duration: 0.3,
-                onComplete: () => {
-                    setTimeout(() => {
-                        gsap.to('.coupon-error', { opacity: 0, duration: 0.3 });
-                    }, 2000);
-                }
-            });
+            showToast('Invalid coupon code', 'error');
         }
     };
 
+    // Coin discount
+    const coinDiscount = useCoins ? Math.min(superCoins, cartTotal - discount) : 0;
+    const finalTotal = cartTotal - discount - coinDiscount;
+
+    // Coins the user will earn on this order
+    const baseCoinsEarned = Math.floor(finalTotal / 100);
+    const coinsEarned = isVIP ? baseCoinsEarned * 2 : baseCoinsEarned;
+
+    // Place order handler
     const handlePlaceOrder = (e) => {
         e.preventDefault();
         setIsProcessing(true);
 
-        // Simulate order processing
         setTimeout(() => {
-            // Generate order number
-            const orderNumber = `BCN-2026-${String(Math.floor(Math.random() * 100000)).padStart(5, '0')}`;
-
-            // Store order data for the confirmation page
             const orderData = {
-                orderNumber,
                 items: cartItems.map(item => ({
                     name: item.name,
                     price: item.price,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    image: item.images?.[0] || null,
                 })),
                 subtotal: cartSubtotal,
                 discount,
+                coinDiscount,
                 shipping,
                 total: finalTotal,
-                date: new Date().toISOString()
+                shippingAddress: formData,
             };
-            sessionStorage.setItem('becane_last_order', JSON.stringify(orderData));
+
+            const newOrder = placeOrder(orderData, coinDiscount);
+
+            // Store for confirmation page
+            sessionStorage.setItem('becane_last_order', JSON.stringify({
+                ...newOrder,
+                coinsEarned: newOrder.coinsEarned,
+            }));
 
             clearCart();
             setIsProcessing(false);
+            showToast('Order placed successfully!', 'success');
             navigate('/order-confirmation');
-        }, 2000);
+        }, 1200);
     };
 
-    const finalTotal = cartTotal - discount;
+    if (cartItems.length === 0) return null;
 
     return (
         <div className="payment-page" ref={containerRef} style={{
             minHeight: '100vh',
             paddingTop: '120px',
             paddingBottom: '80px',
-            backgroundColor: 'var(--color-bg)'
+            backgroundColor: 'var(--color-bg)',
         }}>
-            {/* Success Message */}
-            <div
-                className="success-message"
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'var(--color-bg)',
-                    zIndex: 100,
-                    opacity: orderPlaced ? 1 : 0,
-                    pointerEvents: orderPlaced ? 'auto' : 'none',
-                    transform: orderPlaced ? 'scale(1)' : 'scale(0.9)'
-                }}
-            >
-                <div style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '50%',
-                    background: 'var(--color-accent)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '2rem'
-                }}>
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--bg-primary)" strokeWidth="2">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                </div>
-                <h1 style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'clamp(2rem, 4vw, 3rem)',
-                    marginBottom: '1rem',
-                    textAlign: 'center'
-                }}>
-                    Order Confirmed!
-                </h1>
-                <p style={{
-                    color: 'var(--color-text-muted)',
-                    marginBottom: '2rem',
-                    textAlign: 'center'
-                }}>
-                    Thank you for your purchase. Your order is being prepared.
-                </p>
-                <Link to="/dashboard">
-                    <LuxuryButton>View Order Status</LuxuryButton>
-                </Link>
-            </div>
-
             <div className="container checkout-content">
                 {/* Header */}
                 <div className="checkout-section" style={{ marginBottom: '3rem' }}>
@@ -197,14 +141,14 @@ function PaymentPage() {
                         color: 'var(--color-text-muted)',
                         fontSize: '0.85rem',
                         marginBottom: '1.5rem',
-                        textDecoration: 'none'
+                        textDecoration: 'none',
                     }}>
                         ← Back to Cart
                     </Link>
                     <h1 style={{
                         fontFamily: 'var(--font-display)',
                         fontSize: 'clamp(2rem, 4vw, 3rem)',
-                        fontWeight: 400
+                        fontWeight: 400,
                     }}>
                         Checkout
                     </h1>
@@ -215,38 +159,32 @@ function PaymentPage() {
                         display: 'grid',
                         gridTemplateColumns: '1fr 420px',
                         gap: '3rem',
-                        alignItems: 'start'
+                        alignItems: 'start',
                     }}>
-                        {/* Checkout Form */}
+                        {/* ── LEFT: Shipping Form ── */}
                         <div>
-                            {/* Contact Information */}
+                            {/* Contact */}
                             <div className="checkout-section" style={{
                                 padding: '2rem',
                                 background: 'rgba(0,0,0,0.02)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: '8px',
-                                marginBottom: '1.5rem'
+                                marginBottom: '1.5rem',
                             }}>
                                 <h3 style={{
                                     fontSize: '0.7rem',
                                     letterSpacing: '0.2em',
                                     textTransform: 'uppercase',
                                     color: 'var(--color-text-muted)',
-                                    marginBottom: '1.5rem'
+                                    marginBottom: '1.5rem',
                                 }}>
                                     Contact Information
                                 </h3>
                                 <div className="form-group">
                                     <label htmlFor="email">Email Address</label>
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        placeholder="your@email.com"
-                                        required
-                                    />
+                                    <input type="email" id="email" name="email"
+                                        value={formData.email} onChange={handleChange}
+                                        placeholder="your@email.com" required />
                                 </div>
                             </div>
 
@@ -256,247 +194,193 @@ function PaymentPage() {
                                 background: 'rgba(0,0,0,0.02)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: '8px',
-                                marginBottom: '1.5rem'
+                                marginBottom: '1.5rem',
                             }}>
                                 <h3 style={{
                                     fontSize: '0.7rem',
                                     letterSpacing: '0.2em',
                                     textTransform: 'uppercase',
                                     color: 'var(--color-text-muted)',
-                                    marginBottom: '1.5rem'
+                                    marginBottom: '1.5rem',
                                 }}>
                                     Shipping Address
                                 </h3>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <div className="form-group">
                                         <label htmlFor="firstName">First Name</label>
-                                        <input
-                                            type="text"
-                                            id="firstName"
-                                            name="firstName"
-                                            value={formData.firstName}
-                                            onChange={handleChange}
-                                            required
-                                        />
+                                        <input type="text" id="firstName" name="firstName"
+                                            value={formData.firstName} onChange={handleChange} required />
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="lastName">Last Name</label>
-                                        <input
-                                            type="text"
-                                            id="lastName"
-                                            name="lastName"
-                                            value={formData.lastName}
-                                            onChange={handleChange}
-                                            required
-                                        />
+                                        <input type="text" id="lastName" name="lastName"
+                                            value={formData.lastName} onChange={handleChange} required />
                                     </div>
                                 </div>
                                 <div className="form-group" style={{ marginTop: '1rem' }}>
                                     <label htmlFor="address">Address</label>
-                                    <input
-                                        type="text"
-                                        id="address"
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleChange}
-                                        required
-                                    />
+                                    <input type="text" id="address" name="address"
+                                        value={formData.address} onChange={handleChange} required />
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
                                     <div className="form-group">
                                         <label htmlFor="city">City</label>
-                                        <input
-                                            type="text"
-                                            id="city"
-                                            name="city"
-                                            value={formData.city}
-                                            onChange={handleChange}
-                                            required
-                                        />
+                                        <input type="text" id="city" name="city"
+                                            value={formData.city} onChange={handleChange} required />
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="country">Country</label>
-                                        <select
-                                            id="country"
-                                            name="country"
-                                            value={formData.country}
-                                            onChange={handleChange}
+                                        <select id="country" name="country"
+                                            value={formData.country} onChange={handleChange}
                                             style={{
                                                 background: 'transparent',
                                                 border: 'none',
                                                 borderBottom: '1px solid var(--color-border)',
                                                 padding: '0.75rem 0',
                                                 color: 'var(--color-text)',
-                                                width: '100%'
-                                            }}
-                                        >
+                                                width: '100%',
+                                            }}>
                                             <option value="India">India</option>
                                             <option value="United States">United States</option>
                                             <option value="United Kingdom">United Kingdom</option>
-                                            <option value="France">France</option>
-                                            <option value="Germany">Germany</option>
                                         </select>
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="zip">PIN Code</label>
-                                        <input
-                                            type="text"
-                                            id="zip"
-                                            name="zip"
-                                            value={formData.zip}
-                                            onChange={handleChange}
-                                            required
-                                        />
+                                        <input type="text" id="zip" name="zip"
+                                            value={formData.zip} onChange={handleChange} required />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Payment Method */}
+                            {/* SuperCoin Section */}
                             <div className="checkout-section" style={{
                                 padding: '2rem',
-                                background: 'rgba(0,0,0,0.02)',
-                                border: '1px solid var(--color-border)',
-                                borderRadius: '8px'
+                                background: 'linear-gradient(135deg, rgba(255,193,7,0.06) 0%, rgba(255,152,0,0.04) 100%)',
+                                border: '1px solid rgba(255,193,7,0.25)',
+                                borderRadius: '8px',
                             }}>
                                 <h3 style={{
                                     fontSize: '0.7rem',
                                     letterSpacing: '0.2em',
                                     textTransform: 'uppercase',
                                     color: 'var(--color-text-muted)',
-                                    marginBottom: '1.5rem'
+                                    marginBottom: '1rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
                                 }}>
-                                    Payment Method
+                                    <span style={{ fontSize: '1rem' }}>🪙</span> SuperCoins
                                 </h3>
 
-                                {/* Payment Options */}
                                 <div style={{
                                     display: 'flex',
-                                    gap: '1rem',
-                                    marginBottom: '1.5rem'
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: '1rem',
                                 }}>
-                                    {[
-                                        { id: 'card', label: 'Credit Card', icon: '💳' },
-                                        { id: 'paypal', label: 'PayPal', icon: '🅿️' },
-                                        { id: 'apple', label: 'Apple Pay', icon: '' }
-                                    ].map(method => (
-                                        <button
-                                            key={method.id}
-                                            type="button"
-                                            onClick={() => setPaymentMethod(method.id)}
-                                            style={{
-                                                flex: 1,
-                                                padding: '1rem',
-                                                background: paymentMethod === method.id
-                                                    ? 'rgba(79, 125, 181, 0.1)'
-                                                    : 'rgba(0,0,0,0.02)',
-                                                border: `1px solid ${paymentMethod === method.id
-                                                    ? 'var(--color-accent)'
-                                                    : 'var(--color-border)'}`,
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.3s'
-                                            }}
-                                        >
-                                            <span style={{ fontSize: '1.2rem', display: 'block', marginBottom: '0.25rem' }}>
-                                                {method.icon}
-                                            </span>
+                                    <div>
+                                        <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                            Available Balance
+                                        </p>
+                                        <p style={{
+                                            fontFamily: 'var(--font-display)',
+                                            fontSize: '1.5rem',
+                                            fontWeight: 600,
+                                            color: '#f59e0b',
+                                        }}>
+                                            {superCoins.toLocaleString()} coins
+                                        </p>
+                                    </div>
+                                    {superCoins > 0 && (
+                                        <label style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.75rem',
+                                            cursor: 'pointer',
+                                        }}>
                                             <span style={{
-                                                fontSize: '0.75rem',
-                                                color: paymentMethod === method.id
-                                                    ? 'var(--color-accent)'
-                                                    : 'var(--color-text-muted)'
+                                                fontSize: '0.8rem',
+                                                color: 'var(--color-text-muted)',
                                             }}>
-                                                {method.label}
+                                                Use as discount
                                             </span>
-                                        </button>
-                                    ))}
+                                            <div
+                                                onClick={() => setUseCoins(!useCoins)}
+                                                style={{
+                                                    width: '44px',
+                                                    height: '24px',
+                                                    borderRadius: '12px',
+                                                    background: useCoins ? '#f59e0b' : 'rgba(0,0,0,0.15)',
+                                                    position: 'relative',
+                                                    cursor: 'pointer',
+                                                    transition: 'background 0.3s',
+                                                }}>
+                                                <div style={{
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    borderRadius: '50%',
+                                                    background: '#fff',
+                                                    position: 'absolute',
+                                                    top: '2px',
+                                                    left: useCoins ? '22px' : '2px',
+                                                    transition: 'left 0.3s',
+                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                }} />
+                                            </div>
+                                        </label>
+                                    )}
                                 </div>
 
-                                {/* Card Details */}
-                                {paymentMethod === 'card' && (
-                                    <div>
-                                        <div className="form-group">
-                                            <label htmlFor="cardNumber">Card Number</label>
-                                            <input
-                                                type="text"
-                                                id="cardNumber"
-                                                name="cardNumber"
-                                                value={formData.cardNumber}
-                                                onChange={handleChange}
-                                                placeholder="1234 5678 9012 3456"
-                                                maxLength="19"
-                                            />
-                                        </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                                            <div className="form-group">
-                                                <label htmlFor="expiry">Expiry Date</label>
-                                                <input
-                                                    type="text"
-                                                    id="expiry"
-                                                    name="expiry"
-                                                    value={formData.expiry}
-                                                    onChange={handleChange}
-                                                    placeholder="MM/YY"
-                                                    maxLength="5"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label htmlFor="cvv">CVV</label>
-                                                <input
-                                                    type="text"
-                                                    id="cvv"
-                                                    name="cvv"
-                                                    value={formData.cvv}
-                                                    onChange={handleChange}
-                                                    placeholder="123"
-                                                    maxLength="4"
-                                                />
-                                            </div>
-                                        </div>
+                                {useCoins && coinDiscount > 0 && (
+                                    <div style={{
+                                        padding: '0.75rem 1rem',
+                                        background: 'rgba(34,197,94,0.08)',
+                                        borderRadius: '6px',
+                                        border: '1px solid rgba(34,197,94,0.2)',
+                                    }}>
+                                        <p style={{ fontSize: '0.85rem', color: '#22c55e' }}>
+                                            ✓ Redeeming {coinDiscount.toLocaleString()} coins — saving ₹{coinDiscount.toLocaleString('en-IN')}
+                                        </p>
                                     </div>
                                 )}
 
-                                {paymentMethod === 'paypal' && (
-                                    <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', padding: '2rem' }}>
-                                        You will be redirected to PayPal to complete your payment.
-                                    </p>
-                                )}
-
-                                {paymentMethod === 'apple' && (
-                                    <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', padding: '2rem' }}>
-                                        Use Apple Pay on your device to complete payment.
+                                {superCoins === 0 && (
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                        You'll earn <strong style={{ color: '#f59e0b' }}>{coinsEarned}</strong> coins on this order!
+                                        {isVIP && <span style={{ color: '#f59e0b' }}> (2× VIP bonus)</span>}
                                     </p>
                                 )}
                             </div>
                         </div>
 
-                        {/* Order Summary Sidebar */}
+                        {/* ── RIGHT: Order Summary ── */}
                         <div className="order-summary-side" style={{
                             position: 'sticky',
-                            top: '120px'
+                            top: '120px',
                         }}>
                             <div style={{
                                 padding: '2rem',
                                 background: 'rgba(0,0,0,0.02)',
                                 border: '1px solid var(--color-border)',
-                                borderRadius: '8px'
+                                borderRadius: '8px',
                             }}>
                                 <h3 style={{
                                     fontSize: '0.7rem',
                                     letterSpacing: '0.2em',
                                     textTransform: 'uppercase',
                                     color: 'var(--color-text-muted)',
-                                    marginBottom: '1.5rem'
+                                    marginBottom: '1.5rem',
                                 }}>
                                     Order Summary
                                 </h3>
 
-                                {/* Items Preview */}
+                                {/* Items */}
                                 <div style={{
                                     maxHeight: '200px',
                                     overflowY: 'auto',
                                     marginBottom: '1.5rem',
-                                    paddingRight: '0.5rem'
+                                    paddingRight: '0.5rem',
                                 }}>
                                     {cartItems.map(item => (
                                         <div key={item.id} style={{
@@ -504,7 +388,7 @@ function PaymentPage() {
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
                                             padding: '0.75rem 0',
-                                            borderBottom: '1px solid var(--color-border-light)'
+                                            borderBottom: '1px solid var(--color-border-light)',
                                         }}>
                                             <div>
                                                 <p style={{ fontSize: '0.85rem' }}>{item.name}</p>
@@ -533,7 +417,7 @@ function PaymentPage() {
                                                 borderRadius: '4px',
                                                 padding: '0.75rem',
                                                 color: 'var(--color-text)',
-                                                fontSize: '0.85rem'
+                                                fontSize: '0.85rem',
                                             }}
                                         />
                                         <button
@@ -549,32 +433,21 @@ function PaymentPage() {
                                                 fontSize: '0.75rem',
                                                 cursor: couponApplied ? 'default' : 'pointer',
                                                 textTransform: 'uppercase',
-                                                letterSpacing: '0.1em'
+                                                letterSpacing: '0.1em',
                                             }}
                                         >
-                                            {couponApplied ? 'Applied' : 'Apply'}
+                                            {couponApplied ? 'Applied ✓' : 'Apply'}
                                         </button>
                                     </div>
-                                    <p className="coupon-success" style={{
-                                        fontSize: '0.75rem',
-                                        color: '#22c55e',
-                                        marginTop: '0.5rem',
-                                        opacity: couponApplied ? 1 : 0
-                                    }}>
-                                        ✓ Coupon applied successfully
-                                    </p>
-                                    <p className="coupon-error" style={{
-                                        fontSize: '0.75rem',
-                                        color: '#ef4444',
-                                        marginTop: '0.5rem',
-                                        opacity: 0
-                                    }}>
-                                        Invalid coupon code
-                                    </p>
+                                    {couponApplied && (
+                                        <p style={{ fontSize: '0.75rem', color: '#22c55e', marginTop: '0.5rem' }}>
+                                            ✓ Coupon applied — saving ₹{discount.toLocaleString('en-IN')}
+                                        </p>
+                                    )}
                                     <p style={{
                                         fontSize: '0.7rem',
                                         color: 'var(--color-text-muted)',
-                                        marginTop: '0.5rem'
+                                        marginTop: '0.5rem',
                                     }}>
                                         Try: LUXURY10, MEMBER20, VIP30
                                     </p>
@@ -586,7 +459,7 @@ function PaymentPage() {
                                     flexDirection: 'column',
                                     gap: '0.75rem',
                                     paddingTop: '1rem',
-                                    borderTop: '1px solid var(--color-border)'
+                                    borderTop: '1px solid var(--color-border)',
                                 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: 'var(--color-text-muted)' }}>Subtotal</span>
@@ -594,8 +467,14 @@ function PaymentPage() {
                                     </div>
                                     {discount > 0 && (
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: '#22c55e' }}>Discount</span>
+                                            <span style={{ color: '#22c55e' }}>Coupon Discount</span>
                                             <span style={{ color: '#22c55e' }}>-₹{discount.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    )}
+                                    {coinDiscount > 0 && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: '#f59e0b' }}>🪙 SuperCoin Discount</span>
+                                            <span style={{ color: '#f59e0b' }}>-₹{coinDiscount.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -607,25 +486,43 @@ function PaymentPage() {
                                         justifyContent: 'space-between',
                                         paddingTop: '1rem',
                                         marginTop: '0.5rem',
-                                        borderTop: '1px solid var(--color-border)'
+                                        borderTop: '1px solid var(--color-border)',
                                     }}>
                                         <span style={{
                                             fontFamily: 'var(--font-display)',
-                                            fontSize: '1.1rem'
+                                            fontSize: '1.1rem',
                                         }}>
                                             Total
                                         </span>
                                         <span style={{
                                             fontFamily: 'var(--font-display)',
                                             fontSize: '1.3rem',
-                                            color: 'var(--color-accent)'
+                                            color: 'var(--color-accent)',
                                         }}>
                                             ₹{finalTotal.toLocaleString('en-IN')}
                                         </span>
                                     </div>
                                 </div>
 
-                                {/* Place Order Button */}
+                                {/* Coins earned preview */}
+                                <div style={{
+                                    marginTop: '1rem',
+                                    padding: '0.75rem 1rem',
+                                    background: 'rgba(255,193,7,0.06)',
+                                    borderRadius: '6px',
+                                    border: '1px solid rgba(255,193,7,0.15)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                }}>
+                                    <span style={{ fontSize: '0.9rem' }}>🪙</span>
+                                    <span style={{ fontSize: '0.8rem', color: '#f59e0b' }}>
+                                        You'll earn <strong>{coinsEarned}</strong> SuperCoins
+                                        {isVIP && ' (2× VIP)'}
+                                    </span>
+                                </div>
+
+                                {/* Place Order */}
                                 <LuxuryButton
                                     type="submit"
                                     disabled={isProcessing}
@@ -634,25 +531,37 @@ function PaymentPage() {
                                         marginTop: '1.5rem',
                                         background: 'var(--color-accent)',
                                         color: 'var(--bg-primary)',
-                                        border: 'none'
+                                        border: 'none',
                                     }}
                                 >
-                                    {isProcessing ? 'Processing...' : 'Place Order'}
+                                    {isProcessing ? 'Placing Order...' : 'Place Order'}
                                 </LuxuryButton>
 
                                 <p style={{
                                     fontSize: '0.7rem',
                                     color: 'var(--color-text-muted)',
                                     textAlign: 'center',
-                                    marginTop: '1rem'
+                                    marginTop: '1rem',
                                 }}>
-                                    🔒 Secure SSL Encryption
+                                    No payment required — Demo checkout
                                 </p>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
+
+            {/* Responsive override */}
+            <style>{`
+                @media (max-width: 900px) {
+                    .checkout-content > form > div {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .order-summary-side {
+                        position: static !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

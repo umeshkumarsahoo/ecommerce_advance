@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { OrderProvider } from './context/OrderContext';
 
 // Styles
 import './index.css';
@@ -81,47 +82,49 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <ToastProvider>
-            <WishlistProvider>
-              <ScrollProvider>
-                <ScrollToTop />
-                <ToastContainer />
+            <OrderProvider>
+              <WishlistProvider>
+                <ScrollProvider>
+                  <ScrollToTop />
+                  <ToastContainer />
 
-                <ConditionalLayout>
-                  <main className="min-h-screen">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/register" element={<RegisterPage />} />
-                      <Route path="/dashboard" element={
-                        <ProtectedRoute><DashboardPage /></ProtectedRoute>
-                      } />
-                      <Route path="/cart" element={
-                        <ProtectedRoute><CartPage /></ProtectedRoute>
-                      } />
-                      <Route path="/payment" element={
-                        <ProtectedRoute><PaymentPage /></ProtectedRoute>
-                      } />
-                      <Route path="/order-confirmation" element={
-                        <ProtectedRoute><OrderConfirmationPage /></ProtectedRoute>
-                      } />
-                      <Route path="/wishlist" element={
-                        <ProtectedRoute><WishlistPage /></ProtectedRoute>
-                      } />
-                      <Route path="/journal" element={<JournalPage />} />
-                      <Route path="/journal/:id" element={<JournalPage />} />
-                      <Route path="/stories" element={<ShopByStoryPage />} />
-                      <Route path="/stories/:id" element={<StoryDetailPage />} />
-                      <Route path="/manifesto" element={<ManifestoPage />} />
-                      <Route path="/collections" element={<CollectionsPage />} />
-                      <Route path="/product/:id" element={<ProductDetailPage />} />
-                      <Route path="/contact" element={<ContactPage />} />
-                      <Route path="*" element={<NotFoundPage />} />
-                    </Routes>
-                  </main>
-                </ConditionalLayout>
+                  <ConditionalLayout>
+                    <main className="min-h-screen">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/dashboard" element={
+                          <ProtectedRoute><DashboardPage /></ProtectedRoute>
+                        } />
+                        <Route path="/cart" element={
+                          <ProtectedRoute><CartPage /></ProtectedRoute>
+                        } />
+                        <Route path="/payment" element={
+                          <ProtectedRoute><PaymentPage /></ProtectedRoute>
+                        } />
+                        <Route path="/order-confirmation" element={
+                          <ProtectedRoute><OrderConfirmationPage /></ProtectedRoute>
+                        } />
+                        <Route path="/wishlist" element={
+                          <ProtectedRoute><WishlistPage /></ProtectedRoute>
+                        } />
+                        <Route path="/journal" element={<JournalPage />} />
+                        <Route path="/journal/:id" element={<JournalPage />} />
+                        <Route path="/stories" element={<ShopByStoryPage />} />
+                        <Route path="/stories/:id" element={<StoryDetailPage />} />
+                        <Route path="/manifesto" element={<ManifestoPage />} />
+                        <Route path="/collections" element={<CollectionsPage />} />
+                        <Route path="/product/:id" element={<ProductDetailPage />} />
+                        <Route path="/contact" element={<ContactPage />} />
+                        <Route path="*" element={<NotFoundPage />} />
+                      </Routes>
+                    </main>
+                  </ConditionalLayout>
 
-              </ScrollProvider>
-            </WishlistProvider>
+                </ScrollProvider>
+              </WishlistProvider>
+            </OrderProvider>
           </ToastProvider>
         </CartProvider>
       </AuthProvider>

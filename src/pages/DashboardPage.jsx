@@ -3,25 +3,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useOrders } from '../context/OrderContext';
 
 /**
- * ============================================================================
  * DashboardPage – Luxury Bento Grid Layout
- * ============================================================================
  *
- * Redesigned without sidebar. Uses the global NivoraNav for navigation.
- * Features:
- * - Bento-style card grid (Wishlist, Orders, Coins, Collections, Quick Actions)
- * - Account header with avatar + welcome message
- * - Floating cart button (bottom-right) — REMOVED (now in navbar)
- * - Exclusive upgrade card for standard members
- * - VIP benefits panel for exclusive members
- * ============================================================================
+ * Live data from OrderContext for order history and SuperCoin balance.
  */
 
 function DashboardPage() {
     const { user, isAuthenticated, isVIP, membershipTier, logout, upgradeToExclusive, downgradeFromExclusive } = useAuth();
     const { wishlistItems } = useWishlist();
+    const { orders, superCoins } = useOrders();
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const [upgradeLoading, setUpgradeLoading] = useState(false);
@@ -78,23 +71,26 @@ function DashboardPage() {
         });
     };
 
-    // Mock Data (unchanged logic)
-    const recentOrders = [
-        { id: 'ORD-2026-001', date: 'Jan 15, 2026', status: 'Delivered', total: 125000 },
-        { id: 'ORD-2026-002', date: 'Jan 10, 2026', status: 'In Transit', total: 89000 },
-        { id: 'ORD-2025-089', date: 'Dec 28, 2025', status: 'Delivered', total: 210000 }
-    ];
+    // Live data from context
+    const totalOrders = orders.length;
+    const recentOrders = orders.slice(0, 3);
 
-    // Wishlist items come from WishlistContext (no longer hardcoded)
-
-    // Exclusive Coins
-    const exclusiveCoins = isVIP ? 2450 : 450;
     const coinMultiplier = isVIP ? '2x' : '1x';
 
     // Exclusive plan
     const exclusivePlan = {
         price: 999,
         features: ['Free Express Shipping', '2x Exclusive Coins', 'Early Access', 'Priority Support']
+    };
+
+    // Status color helper
+    const statusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'delivered': return '#22c55e';
+            case 'in transit': return '#3b82f6';
+            case 'processing': return '#f59e0b';
+            default: return 'var(--color-text-muted)';
+        }
     };
 
     if (!isAuthenticated) return null;
@@ -124,50 +120,80 @@ function DashboardPage() {
             <div className="bento-grid">
 
                 {/* Card 1: Order History (large) */}
-                <Link to="/cart" className="bento-card bento-orders">
+                <div className="bento-card bento-orders">
                     <div className="bento-card-header">
                         <span className="bento-card-label">Order History</span>
                         <span className="bento-card-arrow">→</span>
                     </div>
-                    <div className="bento-card-value">24</div>
-                    <p className="bento-card-hint">Total orders placed</p>
-                    <div className="bento-orders-list">
-                        {recentOrders.map(order => (
-                            <div key={order.id} className="bento-order-row">
-                                <div>
-                                    <span className="bento-order-id">{order.id}</span>
-                                    <span className="bento-order-date">{order.date}</span>
+                    <div className="bento-card-value">{totalOrders}</div>
+                    <p className="bento-card-hint">
+                        {totalOrders === 0 ? 'No orders yet — start shopping!' : 'Total orders placed'}
+                    </p>
+                    {recentOrders.length > 0 ? (
+                        <div className="bento-orders-list">
+                            {recentOrders.map(order => (
+                                <div key={order.id} className="bento-order-row">
+                                    <div>
+                                        <span className="bento-order-id">{order.orderNumber}</span>
+                                        <span className="bento-order-date">
+                                            {new Date(order.date).toLocaleDateString('en-US', {
+                                                month: 'short', day: 'numeric', year: 'numeric'
+                                            })}
+                                        </span>
+                                    </div>
+                                    <div className="bento-order-meta">
+                                        <span className="bento-order-total">
+                                            ₹{order.total.toLocaleString('en-IN')}
+                                        </span>
+                                        <span
+                                            className="bento-order-status"
+                                            style={{ color: statusColor(order.status) }}
+                                        >
+                                            {order.status}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="bento-order-meta">
-                                    <span className="bento-order-total">₹{order.total.toLocaleString('en-IN')}</span>
-                                    <span className={`bento-order-status ${order.status.toLowerCase().replace(' ', '-')}`}>
-                                        {order.status}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{
+                            padding: '1.5rem',
+                            textAlign: 'center',
+                            color: 'var(--color-text-muted)',
+                            fontSize: '0.85rem',
+                        }}>
+                            <Link to="/collections" style={{
+                                color: 'var(--color-accent)',
+                                textDecoration: 'underline',
+                                textUnderlineOffset: '3px',
+                            }}>
+                                Browse Collections →
+                            </Link>
+                        </div>
+                    )}
+                </div>
 
-                {/* Card 2: Exclusive Coins (gold accent) */}
+                {/* Card 2: SuperCoins (gold accent) */}
                 <div className="bento-card bento-coins">
                     <div className="bento-card-header">
-                        <span className="bento-card-label">Exclusive Coins</span>
+                        <span className="bento-card-label">SuperCoins</span>
                         <span className="bento-coins-multiplier">{coinMultiplier}</span>
                     </div>
                     <div className="bento-coins-display">
                         <span className="bento-coins-icon">🪙</span>
-                        <span className="bento-coins-value">{exclusiveCoins.toLocaleString()}</span>
+                        <span className="bento-coins-value">{superCoins.toLocaleString()}</span>
                     </div>
                     <p className="bento-card-hint">
                         {isVIP
                             ? 'Earning 2x coins on every purchase'
-                            : 'Upgrade to earn 2x coins'}
+                            : superCoins === 0
+                                ? 'Place your first order to earn coins!'
+                                : 'Upgrade to earn 2x coins'}
                     </p>
                     <div className="bento-coins-perks">
-                        <span className="bento-perk">🎁 Discounts</span>
-                        <span className="bento-perk">✨ Early access</span>
-                        <span className="bento-perk">🎫 Vouchers</span>
+                        <span className="bento-perk">💰 1 coin = ₹1 off</span>
+                        <span className="bento-perk">✨ Earn per ₹100</span>
+                        <span className="bento-perk">🎫 Use at checkout</span>
                     </div>
                 </div>
 
@@ -273,4 +299,3 @@ function DashboardPage() {
 }
 
 export default DashboardPage;
-

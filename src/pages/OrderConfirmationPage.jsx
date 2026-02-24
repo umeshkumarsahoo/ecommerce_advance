@@ -4,11 +4,10 @@ import gsap from 'gsap';
 import LuxuryButton from '../components/LuxuryButton';
 
 /**
- * OrderConfirmationPage — Post-checkout success page
- * 
- * Reads order data from sessionStorage (set by PaymentPage).
- * Shows order number, summary, estimated delivery, and CTAs.
- * Redirects to home if no order data exists (direct access).
+ * OrderConfirmationPage — Thank-you page after checkout
+ *
+ * Reads order data from sessionStorage (set by checkout).
+ * Shows order number, items, totals, coins earned, and estimated delivery.
  */
 const OrderConfirmationPage = () => {
     const navigate = useNavigate();
@@ -16,27 +15,23 @@ const OrderConfirmationPage = () => {
     const [order, setOrder] = useState(null);
 
     useEffect(() => {
-        // Retrieve order data from sessionStorage
         const raw = sessionStorage.getItem('becane_last_order');
         if (!raw) {
             navigate('/', { replace: true });
             return;
         }
-
         try {
             const data = JSON.parse(raw);
             setOrder(data);
-            // Clear after reading so refreshing the page or going back won't re-show
             sessionStorage.removeItem('becane_last_order');
         } catch {
             navigate('/', { replace: true });
         }
     }, [navigate]);
 
-    // GSAP entrance after order loads
+    // GSAP entrance
     useEffect(() => {
         if (!order) return;
-
         const ctx = gsap.context(() => {
             const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
@@ -65,33 +60,33 @@ const OrderConfirmationPage = () => {
                     '-=0.2'
                 );
         }, pageRef);
-
         return () => ctx.revert();
     }, [order]);
 
     if (!order) return null;
 
-    // Estimated delivery: 3-5 business days from now
+    // Delivery dates
     const deliveryStart = new Date();
     deliveryStart.setDate(deliveryStart.getDate() + 3);
     const deliveryEnd = new Date();
     deliveryEnd.setDate(deliveryEnd.getDate() + 5);
 
     const formatDate = (d) => d.toLocaleDateString('en-US', {
-        month: 'long', day: 'numeric', year: 'numeric'
+        month: 'long', day: 'numeric', year: 'numeric',
     });
 
     return (
         <div ref={pageRef} className="oc-page">
             <div className="oc-container">
-                {/* Animated checkmark */}
+                {/* Checkmark */}
                 <div className="oc-checkmark">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
                 </div>
 
-                <h1 className="oc-title">Order Confirmed</h1>
+                <h1 className="oc-title">Thank You!</h1>
+                <p className="oc-subtitle">Your order has been placed successfully</p>
 
                 <div className="oc-order-id">
                     <span className="oc-label">Order Number</span>
@@ -123,8 +118,14 @@ const OrderConfirmationPage = () => {
                             </div>
                             {order.discount > 0 && (
                                 <div className="oc-total-row oc-discount">
-                                    <span>Discount</span>
+                                    <span>Coupon Discount</span>
                                     <span>−₹{order.discount.toLocaleString('en-IN')}</span>
+                                </div>
+                            )}
+                            {order.coinDiscount > 0 && (
+                                <div className="oc-total-row" style={{ color: '#f59e0b' }}>
+                                    <span>🪙 SuperCoin Discount</span>
+                                    <span>−₹{order.coinDiscount.toLocaleString('en-IN')}</span>
                                 </div>
                             )}
                             <div className="oc-total-row">
@@ -132,10 +133,52 @@ const OrderConfirmationPage = () => {
                                 <span>{order.shipping === 0 ? 'Free' : `₹${order.shipping}`}</span>
                             </div>
                             <div className="oc-total-row oc-grand-total">
-                                <span>Total</span>
+                                <span>Total Paid</span>
                                 <span>₹{order.total.toLocaleString('en-IN')}</span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* SuperCoins Earned */}
+                    <div className="oc-card" style={{
+                        background: 'linear-gradient(135deg, rgba(255,193,7,0.08) 0%, rgba(255,152,0,0.04) 100%)',
+                        border: '1px solid rgba(255,193,7,0.25)',
+                    }}>
+                        <h3 className="oc-card-heading" style={{ color: '#f59e0b' }}>
+                            🪙 SuperCoins Earned
+                        </h3>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.75rem',
+                            padding: '1rem 0',
+                        }}>
+                            <span style={{
+                                fontFamily: 'var(--font-display)',
+                                fontSize: '2.5rem',
+                                fontWeight: 700,
+                                color: '#f59e0b',
+                            }}>
+                                +{order.coinsEarned}
+                            </span>
+                            <span style={{
+                                fontSize: '0.85rem',
+                                color: 'var(--color-text-muted)',
+                            }}>
+                                coins added<br />to your balance
+                            </span>
+                        </div>
+                        {order.coinsRedeemed > 0 && (
+                            <p style={{
+                                textAlign: 'center',
+                                fontSize: '0.8rem',
+                                color: 'var(--color-text-muted)',
+                                marginTop: '0.5rem',
+                            }}>
+                                {order.coinsRedeemed} coins were redeemed on this order
+                            </p>
+                        )}
                     </div>
 
                     {/* Delivery info */}
@@ -170,13 +213,11 @@ const OrderConfirmationPage = () => {
                     padding: 120px 2rem 80px;
                     background: var(--bg-primary);
                 }
-
                 .oc-container {
                     max-width: 560px;
                     width: 100%;
                     text-align: center;
                 }
-
                 .oc-checkmark {
                     width: 80px;
                     height: 80px;
@@ -188,15 +229,18 @@ const OrderConfirmationPage = () => {
                     justify-content: center;
                     margin: 0 auto 2rem;
                 }
-
                 .oc-title {
                     font-family: var(--font-display);
                     font-size: clamp(2rem, 4vw, 3rem);
                     font-weight: 600;
                     color: var(--text-primary);
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 0.5rem;
                 }
-
+                .oc-subtitle {
+                    color: var(--text-muted);
+                    font-size: 1rem;
+                    margin-bottom: 2rem;
+                }
                 .oc-order-id {
                     display: flex;
                     flex-direction: column;
@@ -216,7 +260,6 @@ const OrderConfirmationPage = () => {
                     color: var(--accent);
                     letter-spacing: 0.1em;
                 }
-
                 .oc-details {
                     display: flex;
                     flex-direction: column;
@@ -224,14 +267,12 @@ const OrderConfirmationPage = () => {
                     margin-bottom: 2.5rem;
                     text-align: left;
                 }
-
                 .oc-card {
                     padding: 1.75rem;
                     background: rgba(0, 0, 0, 0.02);
                     border: 1px solid var(--border-light);
                     border-radius: 12px;
                 }
-
                 .oc-card-heading {
                     font-size: 0.7rem;
                     letter-spacing: 0.2em;
@@ -239,7 +280,6 @@ const OrderConfirmationPage = () => {
                     color: var(--text-muted);
                     margin-bottom: 1rem;
                 }
-
                 .oc-items-list {
                     display: flex;
                     flex-direction: column;
@@ -248,7 +288,6 @@ const OrderConfirmationPage = () => {
                     padding-bottom: 1.25rem;
                     border-bottom: 1px solid var(--border-light);
                 }
-
                 .oc-item-row {
                     display: flex;
                     justify-content: space-between;
@@ -262,7 +301,6 @@ const OrderConfirmationPage = () => {
                     font-size: 0.8rem;
                 }
                 .oc-item-price { color: var(--text-secondary); }
-
                 .oc-totals {
                     display: flex;
                     flex-direction: column;
@@ -284,7 +322,6 @@ const OrderConfirmationPage = () => {
                     font-weight: 600;
                     color: var(--accent);
                 }
-
                 .oc-delivery-dates {
                     font-family: var(--font-display);
                     font-size: 1rem;
@@ -297,7 +334,6 @@ const OrderConfirmationPage = () => {
                     color: var(--text-muted);
                     line-height: 1.6;
                 }
-
                 .oc-actions {
                     display: flex;
                     flex-direction: column;
