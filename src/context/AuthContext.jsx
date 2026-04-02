@@ -104,41 +104,32 @@ export const AuthProvider = ({ children }) => {
 
     // ---------------------------------------------------------------------------
     // LOGIN FUNCTION
-    // Validates credentials against our hardcoded database
+    // Validates credentials against the MongoDB backend API
     // ---------------------------------------------------------------------------
-    const login = (username, password) => {
-        // Convert username to lowercase for case-insensitive matching
-        const normalizedUsername = username.toLowerCase().trim();
+    const login = async (username, password) => {
+        try {
+            const response = await fetch('http://localhost:5001/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
 
-        // Look up user in our database
-        const dbUser = USERS_DATABASE[normalizedUsername];
+            const data = await response.json();
 
-        // Validate credentials
-        if (dbUser && dbUser.password === password) {
-            // Create user data object (excluding password for security)
-            const userData = {
-                id: dbUser.id,
-                username: dbUser.username,
-                name: dbUser.name,
-                email: dbUser.email,
-                memberSince: dbUser.memberSince,
-                isVIP: dbUser.isVIP,
-                membershipTier: dbUser.membershipTier,
-                benefits: dbUser.benefits
+            if (data.success) {
+                // Update state and persist to localStorage
+                setUser(data.user);
+                localStorage.setItem('luxuryUser', JSON.stringify(data.user));
+                return { success: true };
+            } else {
+                return { success: false, error: data.message || 'Invalid email or password.' };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                error: 'Server connection failed. Please try again.'
             };
-
-            // Update state and persist to localStorage
-            setUser(userData);
-            localStorage.setItem('luxuryUser', JSON.stringify(userData));
-
-            return { success: true };
         }
-
-        // Invalid credentials
-        return {
-            success: false,
-            error: 'Invalid username or password. Please try again.'
-        };
     };
 
     // ---------------------------------------------------------------------------

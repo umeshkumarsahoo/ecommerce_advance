@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
-import { getProductById } from '../data/productData';
 
 // ═══════════════════════════════════════════════════════════════
 // ProductDetailPage — Premium Jewellery Product Layout
@@ -69,13 +68,30 @@ function ProductDetailPage() {
     const { showToast } = useToast();
     const { toggleWishlist, isWishlisted } = useWishlist();
 
-    const product = getProductById(id);
+    const [product, setProduct] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(null);
     const [addedToCart, setAddedToCart] = useState(false);
     const [openAccordion, setOpenAccordion] = useState(null);
     const wishlisted = product ? isWishlisted(product.id) : false;
+
+    useEffect(() => {
+        setIsLoading(true);
+        fetch(`http://localhost:5001/api/products/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setProduct(data.product);
+                }
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setIsLoading(false);
+            });
+    }, [id]);
 
     // --- Review State ---
     const [allReviews, setAllReviews] = useState(INITIAL_REVIEWS);
@@ -188,6 +204,23 @@ function ProductDetailPage() {
 
     // Get category-specific details
     const categoryInfo = CATEGORY_DETAILS[product?.category] || DEFAULT_DETAILS;
+
+    if (isLoading) {
+        return (
+            <div style={{ ...s.page, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <p>Loading Product...</p>
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div style={{ ...s.page, display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
+                <h2>Product Not Found</h2>
+                <Link to="/collections" style={{ color: '#4F7DB5', textDecoration: 'underline' }}>Return to Collections</Link>
+            </div>
+        );
+    }
 
     return (
         <div style={s.page}>

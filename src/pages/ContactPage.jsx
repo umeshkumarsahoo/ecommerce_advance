@@ -1,8 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AnimatedText from '../components/AnimatedText';
-import LuxuryButton from '../components/LuxuryButton';
 
 function ContactPage() {
+    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [isLoading, setIsLoading] = useState(false);
+    const [status, setStatus] = useState({ type: '', text: '' }); // 'success' or 'error'
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setStatus({ type: '', text: '' });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setStatus({ type: '', text: '' });
+
+        try {
+            const response = await fetch('http://localhost:5001/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setStatus({ type: 'success', text: data.message });
+                setFormData({ name: '', email: '', message: '' }); // Reset form
+            } else {
+                setStatus({ type: 'error', text: data.message || 'Failed to send message.' });
+            }
+        } catch (err) {
+            setStatus({ type: 'error', text: 'Unable to connect to server. Please try again.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="page-wrapper" style={{ paddingTop: '120px', minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
 
@@ -45,29 +80,73 @@ function ContactPage() {
 
                     {/* Form */}
                     <div className="contact-form-wrap" style={{ marginTop: '4rem' }}>
-                        <form className="flex-column" style={{ gap: '2rem' }} onSubmit={(e) => e.preventDefault()}>
+
+                        {/* Status Message */}
+                        {status.text && (
+                            <div style={{
+                                padding: '12px 16px',
+                                background: status.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                border: `1px solid ${status.type === 'success' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.2)'}`,
+                                borderRadius: '8px',
+                                color: status.type === 'success' ? '#22c55e' : '#ef4444',
+                                fontSize: '0.85rem',
+                                marginBottom: '1.5rem',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '8px'
+                            }}>
+                                <span style={{ fontSize: '1rem', marginTop: '-2px' }}>{status.type === 'success' ? '✓' : '⚠️'}</span>
+                                <span>{status.text}</span>
+                            </div>
+                        )}
+
+                        <form className="flex-column" style={{ gap: '2rem' }} onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label className="text-caption">Name</label>
-                                <input type="text" placeholder="Your name" className="nivora-input" />
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    placeholder="Your name"
+                                    className="nivora-input"
+                                    required
+                                />
                             </div>
 
                             <div className="form-group">
                                 <label className="text-caption">Email</label>
-                                <input type="email" placeholder="Your email" className="nivora-input" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="Your email"
+                                    className="nivora-input"
+                                    required
+                                />
                             </div>
 
                             <div className="form-group">
                                 <label className="text-caption">Message</label>
                                 <textarea
                                     rows="4"
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleChange}
                                     className="nivora-input"
                                     placeholder="How can we help?"
+                                    required
                                 ></textarea>
                             </div>
 
                             <div className="mt-8">
-                                <button type="submit" className="nivora-btn nivora-btn-accent">
-                                    Send Message
+                                <button
+                                    type="submit"
+                                    className="nivora-btn nivora-btn-accent"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Sending...' : 'Send Message'}
                                 </button>
                             </div>
                         </form>

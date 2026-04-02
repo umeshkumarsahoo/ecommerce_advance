@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import LuxuryButton from '../components/LuxuryButton';
+import { useToast } from '../context/ToastContext';
 
 /**
  * RegisterPage Component
@@ -16,7 +17,13 @@ function RegisterPage() {
         confirmPassword: ''
     });
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const containerRef = useRef(null);
+    const navigate = useNavigate();
+    const { showToast } = useToast();
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -50,21 +57,24 @@ function RegisterPage() {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(''); // Clear error on input change
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setSuccess('');
 
         // Mobile number validation: exactly 10 digits
         const mobileRegex = /^[0-9]{10}$/;
         if (!mobileRegex.test(formData.mobile)) {
-            alert('Please enter a valid 10-digit mobile number');
+            setError('Please enter a valid 10-digit mobile number');
             return;
         }
 
         // Password validation: minimum 5 characters, at least one uppercase letter and one number
         if (formData.password.length < 5) {
-            alert('Password must be at least 5 characters long');
+            setError('Password must be at least 5 characters long');
             return;
         }
 
@@ -72,24 +82,50 @@ function RegisterPage() {
         const hasNumber = /[0-9]/.test(formData.password);
 
         if (!hasUppercase) {
-            alert('Password must contain at least one uppercase letter');
+            setError('Password must contain at least one uppercase letter');
             return;
         }
 
         if (!hasNumber) {
-            alert('Password must contain at least one number');
+            setError('Password must contain at least one number');
             return;
         }
 
         if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match');
+            setError('Passwords do not match');
             return;
         }
+
         setIsLoading(true);
-        setTimeout(() => {
+
+        try {
+            const response = await fetch('http://localhost:5001/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    mobile: formData.mobile,
+                    password: formData.password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setSuccess(data.message);
+                showToast('Registration successful! Redirecting to login...', 'success');
+                setTimeout(() => navigate('/login'), 2000);
+            } else {
+                setError(data.message || 'Registration failed. Please try again.');
+                showToast(data.message || 'Registration failed', 'error');
+            }
+        } catch (err) {
+            setError('Unable to connect to server. Please make sure the backend is running.');
+            showToast('Server connection failed', 'error');
+        } finally {
             setIsLoading(false);
-            alert('Registration functionality not yet implemented');
-        }, 1500);
+        }
     };
 
     return (
@@ -114,6 +150,24 @@ function RegisterPage() {
                         <h1 className="display-lg font-serif">Create Account</h1>
                         <p className="login-subtitle">Join our exclusive community</p>
                     </div>
+
+                    {error && (
+                        <div style={{
+                            padding: '12px 16px',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            borderRadius: '8px',
+                            color: '#ef4444',
+                            fontSize: '0.85rem',
+                            marginBottom: '1.5rem',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '8px'
+                        }}>
+                            <span style={{ fontSize: '1rem', marginTop: '-2px' }}>⚠️</span>
+                            <span>{error}</span>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="login-form">
                         <div className="form-group">
@@ -160,30 +214,56 @@ function RegisterPage() {
 
                         <div className="form-group">
                             <label htmlFor="password" className="text-meta">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                required
-                                autoComplete="new-password"
-                            />
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
+                                    autoComplete="new-password"
+                                    style={{ width: '100%', paddingRight: '3rem' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                        background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem'
+                                    }}
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="form-group">
                             <label htmlFor="confirmPassword" className="text-meta">Confirm Password</label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                required
-                                autoComplete="new-password"
-                            />
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
+                                    autoComplete="new-password"
+                                    style={{ width: '100%', paddingRight: '3rem' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    style={{
+                                        position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                        background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem'
+                                    }}
+                                >
+                                    {showConfirmPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
                         </div>
 
                         <LuxuryButton

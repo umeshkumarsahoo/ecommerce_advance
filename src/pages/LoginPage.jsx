@@ -13,6 +13,7 @@ function LoginPage() {
     const [formData, setFormData] = useState({ username: '', mobile: '', password: '' });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const { login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -65,41 +66,38 @@ function LoginPage() {
         setError(''); // Clear error on input
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Mobile number validation: exactly 10 digits using regex
-        const mobileRegex = /^[0-9]{10}$/;
-        if (!mobileRegex.test(formData.mobile)) {
-            setError('Please enter a valid 10-digit mobile number');
+        // Mobile number validation logic is actually unneeded strictly for login if they use email, 
+        // but since the form asks for username AND mobile, we'll just check if they are provided.
+        if (!formData.username || !formData.password) {
+            setError('Email (username) and password are required');
             return;
         }
 
         setIsLoading(true);
         setError('');
 
-        // Simulate network delay
-        setTimeout(() => {
-            const result = login(formData.username, formData.password);
-            setIsLoading(false);
+        const result = await login(formData.username, formData.password);
+        setIsLoading(false);
 
-            if (result.success) {
-                // Animate out and navigate
-                gsap.to('.login-page', {
-                    opacity: 0,
-                    duration: 0.5,
-                    onComplete: () => navigate(redirectTo, { replace: true })
-                });
-            } else {
-                setError(result.error);
-                // Shake animation on error
-                gsap.to('.login-form-container', {
-                    x: [-10, 10, -10, 10, 0],
-                    duration: 0.4,
-                    ease: 'power2.out'
-                });
-            }
-        }, 800);
+        if (result.success) {
+            // Animate out and navigate
+            gsap.to('.login-page', {
+                opacity: 0,
+                duration: 0.5,
+                onComplete: () => navigate(redirectTo, { replace: true })
+            });
+        } else {
+            setError(result.error);
+            // Shake animation on error
+            gsap.to('.login-form-container', {
+                x: [-10, 10, -10, 10, 0],
+                duration: 0.4,
+                ease: 'power2.out'
+            });
+        }
     };
 
     return (
@@ -181,16 +179,37 @@ function LoginPage() {
 
                         <div className="form-group">
                             <label htmlFor="password" className="text-meta">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                required
-                                autoComplete="current-password"
-                            />
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
+                                    autoComplete="current-password"
+                                    style={{ width: '100%', paddingRight: '3rem' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '10px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: 'var(--text-muted)',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        padding: '0.2rem'
+                                    }}
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="form-options">
@@ -198,7 +217,11 @@ function LoginPage() {
                                 <input type="checkbox" name="remember" />
                                 <span>Remember me</span>
                             </label>
-                            <Link to="/forgot-password" className="forgot-link">Forgot password?</Link>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <Link to="/update-password" className="forgot-link" style={{ color: 'var(--accent)' }}>Update password?</Link>
+                                <span style={{ color: 'var(--border-light)' }}>|</span>
+                                <Link to="/forgot-password" className="forgot-link">Forgot password?</Link>
+                            </div>
                         </div>
 
                         <LuxuryButton

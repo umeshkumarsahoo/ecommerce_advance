@@ -1,16 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
-/**
- * OrderContext - Manages order history & SuperCoin balance
- *
- * SuperCoin Rules:
- *   - Earn 1 coin per ₹100 spent (VIP earns 2×)
- *   - Redeem: 1 coin = ₹1 discount
- *   - Balance starts at 0 for every new account
- *   - Persisted per-user in localStorage
- */
-
 const OrderContext = createContext(null);
 
 export const useOrders = () => {
@@ -21,73 +11,107 @@ export const useOrders = () => {
     return context;
 };
 
-// ---------------------------------------------------------------------------
-// localStorage helpers – keyed by username so each account is independent
-// ---------------------------------------------------------------------------
-const storageKey = (username, suffix) => `becane_${username}_${suffix}`;
-
-const loadJSON = (key, fallback) => {
-    try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-    } catch {
-        return fallback;
-    }
-};
-
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 export const OrderProvider = ({ children }) => {
-    const { user, isVIP } = useAuth();
     const [orders, setOrders] = useState([]);
     const [superCoins, setSuperCoins] = useState(0);
+    const { user, isAuthenticated } = useAuth();
 
-    // ── Load from localStorage whenever the logged-in user changes ──
+    // 1. Initial Load
     useEffect(() => {
-        if (user?.username) {
-            setOrders(loadJSON(storageKey(user.username, 'orders'), []));
-            setSuperCoins(loadJSON(storageKey(user.username, 'coins'), 0));
-        } else {
-            setOrders([]);
-            setSuperCoins(0);
-        }
-    }, [user?.username]);
-
-    // ── Persist whenever data changes ──
-    useEffect(() => {
-        if (user?.username) {
-            localStorage.setItem(storageKey(user.username, 'orders'), JSON.stringify(orders));
-        }
-    }, [orders, user?.username]);
-
-    useEffect(() => {
-        if (user?.username) {
-            localStorage.setItem(storageKey(user.username, 'coins'), JSON.stringify(superCoins));
-        }
-    }, [superCoins, user?.username]);
-
-    // ── Place order ──
-    const placeOrder = (orderData, coinsRedeemed = 0) => {
-        // Calculate coins earned: 1 per ₹100 (VIP = 2×)
-        const baseCoins = Math.floor(orderData.total / 100);
-        const coinsEarned = isVIP ? baseCoins * 2 : baseCoins;
-
-        const newOrder = {
-            ...orderData,
-            id: `ORD-${Date.now()}`,
-            orderNumber: `BCN-2026-${String(Math.floor(Math.random() * 100000)).padStart(5, '0')}`,
-            date: new Date().toISOString(),
-            status: 'Processing',
-            coinsEarned,
-            coinsRedeemed,
+        const fetchDbOrders = async () => {
+            try {
+                const res = await fetch(`http://localhost:5001/api/orders/${user.id}`);
+                const data = await res.json();
+                if (data.success) {
+                    setOrders(data.orders);
+                    setSuperCoins(user?.superCoins || 0); // Pull directly from user auth object initially
+                }
+            } catch (err) {
+                console.error("Failed to load orders from DB:", err);
+            }
         };
 
-        setOrders(prev => [newOrder, ...prev]);
-        setSuperCoins(prev => prev + coinsEarned - coinsRedeemed);
+        if (isAuthenticated && user?.id) {
+            // Load from MongoDB
+            fetchDbOrders();
+        } else {
+            // Load from Local Storage (Guest)
+            const savedOrders = localStorage.getItem('becane_orders');
+            const savedCoins = localStorage.getItem('becane_supercoins');
+            if (savedOrders) setOrders(JSON.parse(savedOrders));
+            if (savedCoins) setSuperCoins(parseInt(savedCoins, 10));
+        }
+    }, [isAuthenticated, user?.id, user?.superCoins]);
+
+
+    /**
+     * Place a new order
+     */
+    const placeOrder = async (orderData) => {
+        const finalAmount = orderData.total || 0;
+        const discountAmount = orderData.discount || 0;
+        const coinDiscount = orderData.coinDiscount || 0;
+        
+        let newOrder;
+
+        if (isAuthenticated && user?.id) {
+            // ── LOGGED IN: Save to Database ──
+            try {
+                const res = await fetch(`http://localhost:5001/api/orders/${user.id}/place`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    newOrder = data.order;
+                    setOrders(prev => [newOrder, ...prev]);
+                    setSuperCoins(data.superCoins); // Update coins directly from backend response
+                } else {
+                    throw new Error(data.message || 'Failed to place order');
+                }
+            } catch (err) {
+                console.error("Failed to sync order:", err);
+                throw err;
+            }
+
+        } else {
+            // ── GUEST: Save to Local Storage ──
+            const orderNumber = 'ORD-' + Math.random().toString(36).substring(2, 9).toUpperCase() + '-' + Date.now().toString().slice(-4);
+            const baseCoins = Math.floor(finalAmount / 100);
+            
+            newOrder = {
+                id: Date.now().toString(),
+                orderNumber,
+                items: orderData.items,
+                subtotal: orderData.subtotal,
+                discount: discountAmount,
+                coinDiscount,
+                shipping: orderData.shipping || 0,
+                total: finalAmount,
+                status: 'Processing',
+                date: new Date().toISOString(),
+                shippingAddress: orderData.shippingAddress,
+                coinsEarned: baseCoins
+            };
+
+            setOrders(prev => {
+                const updatedOrders = [newOrder, ...prev];
+                localStorage.setItem('becane_orders', JSON.stringify(updatedOrders));
+                return updatedOrders;
+            });
+
+            setSuperCoins(prev => {
+                const newCoins = Math.max(0, prev + baseCoins - coinDiscount);
+                localStorage.setItem('becane_supercoins', newCoins.toString());
+                return newCoins;
+            });
+        }
 
         return newOrder;
     };
+
 
     const value = {
         orders,

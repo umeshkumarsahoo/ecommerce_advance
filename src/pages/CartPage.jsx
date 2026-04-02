@@ -174,7 +174,7 @@ function CartPage() {
                                         background: '#DEE4EF'
                                     }}>
                                         <img
-                                            src={productImages[item.id] || productImages.default}
+                                            src={item.image || productImages.default}
                                             alt={item.name}
                                             style={{
                                                 width: '100%',
@@ -405,7 +405,7 @@ function CartPage() {
                                     style={{
                                         width: '100%',
                                         background: 'var(--color-accent)',
-                                        color: 'var(--bg-primary)',
+                                        color: '#ffffff',
                                         border: 'none'
                                     }}
                                 >

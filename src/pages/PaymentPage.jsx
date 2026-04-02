@@ -87,11 +87,11 @@ function PaymentPage() {
     const coinsEarned = isVIP ? baseCoinsEarned * 2 : baseCoinsEarned;
 
     // Place order handler
-    const handlePlaceOrder = (e) => {
+    const handlePlaceOrder = async (e) => {
         e.preventDefault();
         setIsProcessing(true);
 
-        setTimeout(() => {
+        try {
             const orderData = {
                 items: cartItems.map(item => ({
                     name: item.name,
@@ -107,7 +107,7 @@ function PaymentPage() {
                 shippingAddress: formData,
             };
 
-            const newOrder = placeOrder(orderData, coinDiscount);
+            const newOrder = await placeOrder(orderData, coinDiscount);
 
             // Store for confirmation page
             sessionStorage.setItem('becane_last_order', JSON.stringify({
@@ -119,7 +119,10 @@ function PaymentPage() {
             setIsProcessing(false);
             showToast('Order placed successfully!', 'success');
             navigate('/order-confirmation');
-        }, 1200);
+        } catch (error) {
+            setIsProcessing(false);
+            showToast(error.message || 'Failed to place order. Please try again.', 'error');
+        }
     };
 
     if (cartItems.length === 0) return null;
@@ -530,7 +533,7 @@ function PaymentPage() {
                                         width: '100%',
                                         marginTop: '1.5rem',
                                         background: 'var(--color-accent)',
-                                        color: 'var(--bg-primary)',
+                                        color: '#ffffff',
                                         border: 'none',
                                     }}
                                 >

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
-import { PRODUCTS, CATEGORIES, GENDERS, GENDER_CATEGORIES } from '../data/productData';
+import { CATEGORIES, GENDERS, GENDER_CATEGORIES } from '../data/productData';
 import SkeletonGrid from '../components/SkeletonLoader';
 
 // ═══════════════════════════════════════════════════════════════
@@ -33,16 +33,27 @@ function CollectionsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const drawerRef = useRef(null);
 
+    const [products, setProducts] = useState([]);
+
     // Lock body scroll when mobile filter is open
     useEffect(() => {
         document.body.style.overflow = mobileFilterOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [mobileFilterOpen]);
 
-    // Simulate loading for skeleton
+    // Fetch products from API
     useEffect(() => {
-        const timer = setTimeout(() => setIsLoading(false), 400);
-        return () => clearTimeout(timer);
+        setIsLoading(true);
+        fetch('http://localhost:5001/api/products')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) setProducts(data.products);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setIsLoading(false);
+            });
     }, []);
 
     // --- Toggle category checkbox ---
@@ -54,7 +65,7 @@ function CollectionsPage() {
 
     // --- Filtering Logic ---
     const getFilteredProducts = () => {
-        let filtered = [...PRODUCTS];
+        let filtered = [...products];
         if (selectedGender) {
             filtered = filtered.filter((p) => p.gender === selectedGender);
         }

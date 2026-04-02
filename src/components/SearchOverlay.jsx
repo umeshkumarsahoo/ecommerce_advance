@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-import { PRODUCTS } from '../data/productData';
+// import { PRODUCTS } from '../data/productData';
 
 /**
  * SearchOverlay — Full-viewport glassmorphism search
@@ -11,9 +11,20 @@ import { PRODUCTS } from '../data/productData';
 
 function SearchOverlay({ isOpen, onClose }) {
     const [query, setQuery] = useState('');
+    const [products, setProducts] = useState([]);
     const overlayRef = useRef(null);
     const inputRef = useRef(null);
     const navigate = useNavigate();
+
+    // Fetch products on mount
+    useEffect(() => {
+        fetch('http://localhost:5001/api/products')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) setProducts(data.products);
+            })
+            .catch(err => console.error(err));
+    }, []);
 
     // Animate open/close
     useEffect(() => {
@@ -60,7 +71,7 @@ function SearchOverlay({ isOpen, onClose }) {
 
     // Filter products
     const results = query.trim().length > 0
-        ? PRODUCTS.filter(p =>
+        ? products.filter(p =>
             p.name.toLowerCase().includes(query.toLowerCase()) ||
             p.category.toLowerCase().includes(query.toLowerCase()) ||
             p.description.toLowerCase().includes(query.toLowerCase())
