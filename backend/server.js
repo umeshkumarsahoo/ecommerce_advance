@@ -15,7 +15,11 @@ const wishlistRoutes = require('./routes/wishlists');
 // ---------------------------------------------------------------------------
 const app = express();
 const PORT = process.env.PORT || 5001;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://cse23bcsc69_db_user:tMk0HKdNvx2uIacb@cluster1.qfz0ee1.mongodb.net/becane_ecommerce?retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+    throw new Error('Database connection string not configured');
+}
 
 // ---------------------------------------------------------------------------
 // Middleware
