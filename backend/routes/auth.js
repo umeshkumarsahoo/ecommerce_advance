@@ -9,7 +9,6 @@ router.post('/register', async (req, res) => {
     try {
         const { name, email, mobile, password } = req.body;
 
-        // ── Validate required fields ──
         if (!name || !email || !mobile || !password) {
             return res.status(400).json({
                 success: false,
@@ -17,7 +16,6 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // ── Check if email already exists ──
         const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
             return res.status(400).json({
@@ -26,7 +24,6 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // ── Validate mobile: exactly 10 digits ──
         if (!/^[0-9]{10}$/.test(mobile)) {
             return res.status(400).json({
                 success: false,
@@ -34,7 +31,6 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // ── Validate password strength ──
         if (password.length < 5) {
             return res.status(400).json({
                 success: false,
@@ -54,15 +50,8 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // ── Create user (password is hashed by pre-save hook) ──
-        const user = await User.create({
-            name,
-            email,
-            mobile,
-            password,
-        });
+        const user = await User.create({ name, email, mobile, password });
 
-        // ── Return success (exclude password from response) ──
         res.status(201).json({
             success: true,
             message: 'Registration successful! You can now log in.',
@@ -75,17 +64,16 @@ router.post('/register', async (req, res) => {
                 membershipTier: user.membershipTier,
                 isVIP: user.isVIP,
                 benefits: user.benefits,
+                superCoins: user.superCoins,
             },
         });
     } catch (error) {
-        // Handle Mongoose duplicate key error
         if (error.code === 11000) {
             return res.status(400).json({
                 success: false,
                 message: 'An account with this email already exists',
             });
         }
-
         console.error('Registration error:', error.message);
         res.status(500).json({
             success: false,
@@ -93,6 +81,7 @@ router.post('/register', async (req, res) => {
         });
     }
 });
+
 // ---------------------------------------------------------------------------
 // POST /api/auth/login — Authenticate an existing user
 // ---------------------------------------------------------------------------
@@ -107,7 +96,6 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // We use 'email' as the username in the frontend form
         const user = await User.findOne({ email: username.toLowerCase() });
         if (!user) {
             return res.status(401).json({
@@ -124,7 +112,6 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // Return user data (no password)
         res.status(200).json({
             success: true,
             user: {
@@ -136,6 +123,7 @@ router.post('/login', async (req, res) => {
                 membershipTier: user.membershipTier,
                 isVIP: user.isVIP,
                 benefits: user.benefits,
+                superCoins: user.superCoins,
             },
         });
     } catch (error) {
@@ -144,6 +132,97 @@ router.post('/login', async (req, res) => {
             success: false,
             message: 'Server error. Please try again later.',
         });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/auth/upgrade — Upgrade user to Exclusive (VIP) membership
+// ---------------------------------------------------------------------------
+router.post('/upgrade', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ success: false, message: 'userId is required' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.isVIP = true;
+        user.membershipTier = 'Exclusive';
+        user.benefits = [
+            'Free Express Shipping',
+            'Early Access to Collections',
+            'Exclusive Member Discount (20%)',
+            'Priority Customer Support',
+            'Complimentary Gift Wrapping',
+            'Exclusive VIP Events Access',
+        ];
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Upgraded to Exclusive membership!',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                mobile: user.mobile,
+                memberSince: user.memberSince,
+                membershipTier: user.membershipTier,
+                isVIP: user.isVIP,
+                benefits: user.benefits,
+                superCoins: user.superCoins,
+            },
+        });
+    } catch (error) {
+        console.error('Upgrade error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error during upgrade' });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/auth/downgrade — Downgrade user to Standard membership
+// ---------------------------------------------------------------------------
+router.post('/downgrade', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ success: false, message: 'userId is required' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.isVIP = false;
+        user.membershipTier = 'Standard';
+        user.benefits = ['Standard Shipping', 'Member-Only Promotions'];
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Downgraded to Standard membership.',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                mobile: user.mobile,
+                memberSince: user.memberSince,
+                membershipTier: user.membershipTier,
+                isVIP: user.isVIP,
+                benefits: user.benefits,
+                superCoins: user.superCoins,
+            },
+        });
+    } catch (error) {
+        console.error('Downgrade error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error during downgrade' });
     }
 });
 

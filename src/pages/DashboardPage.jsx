@@ -136,7 +136,7 @@ function DashboardPage() {
                                     <div>
                                         <span className="bento-order-id">{order.orderNumber}</span>
                                         <span className="bento-order-date">
-                                            {new Date(order.date).toLocaleDateString('en-US', {
+                                            {new Date(order.createdAt || order.date).toLocaleDateString('en-US', {
                                                 month: 'short', day: 'numeric', year: 'numeric'
                                             })}
                                         </span>

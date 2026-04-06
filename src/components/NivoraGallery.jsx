@@ -29,18 +29,18 @@ const NivoraGallery = () => {
     const { showToast } = useToast();
 
     const products = [
-        { id: 1, name: "Diamond Solitaire Ring", category: "Women · Rings", price: "₹3,75,000", numPrice: 375000, image: img1 },
-        { id: 9, name: "Gold Signet Ring", category: "Men · Rings", price: "₹1,55,000", numPrice: 155000, image: img2 },
-        { id: 2, name: "Pearl Strand Necklace", category: "Women · Necklaces", price: "₹2,45,000", numPrice: 245000, image: img3 },
-        { id: 10, name: "Cuban Link Chain", category: "Men · Chains", price: "₹4,25,000", numPrice: 425000, image: img4 },
-        { id: 3, name: "Emerald Tennis Bracelet", category: "Women · Bracelets", price: "₹4,99,000", numPrice: 499000, image: img5 },
-        { id: 11, name: "Diamond Cufflinks", category: "Men · Cufflinks", price: "₹1,89,000", numPrice: 189000, image: img6 },
-        { id: 4, name: "Diamond Drop Earrings", category: "Women · Earrings", price: "₹2,95,000", numPrice: 295000, image: img1 },
-        { id: 12, name: "Leather & Gold Bracelet", category: "Men · Bracelets", price: "₹1,05,000", numPrice: 105000, image: img2 },
-        { id: 7, name: "Sapphire Pendant", category: "Women · Necklaces", price: "₹2,75,000", numPrice: 275000, image: img3 },
-        { id: 13, name: "Onyx Band Ring", category: "Men · Rings", price: "₹82,000", numPrice: 82000, image: img4 },
-        { id: 8, name: "Diamond Huggie Earrings", category: "Women · Earrings", price: "₹1,39,000", numPrice: 139000, image: img5 },
-        { id: 16, name: "Black Diamond Studs", category: "Men · Earrings", price: "₹1,19,000", numPrice: 119000, image: img6 }
+        { id: 1, name: "Diamond Solitaire Ring", category: "Women · Rings", price: "₹3,75,000", numPrice: 375000, image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80" },
+        { id: 9, name: "Gold Signet Ring", category: "Men · Rings", price: "₹1,55,000", numPrice: 155000, image: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=800&q=80" },
+        { id: 2, name: "Pearl Strand Necklace", category: "Women · Necklaces", price: "₹2,45,000", numPrice: 245000, image: "https://images.unsplash.com/photo-1561919036-397982117e31?w=800&q=80" },
+        { id: 10, name: "Cuban Link Chain", category: "Men · Chains", price: "₹4,25,000", numPrice: 425000, image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&q=80" },
+        { id: 3, name: "Emerald Tennis Bracelet", category: "Women · Bracelets", price: "₹4,99,000", numPrice: 499000, image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80" },
+        { id: 11, name: "Diamond Cufflinks", category: "Men · Cufflinks", price: "₹1,89,000", numPrice: 189000, image: "https://images.unsplash.com/photo-1590548784585-643d2b9f2925?w=800&q=80" },
+        { id: 4, name: "Diamond Drop Earrings", category: "Women · Earrings", price: "₹2,95,000", numPrice: 295000, image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=80" },
+        { id: 12, name: "Leather & Gold Bracelet", category: "Men · Bracelets", price: "₹1,05,000", numPrice: 105000, image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=800&q=80" },
+        { id: 7, name: "Sapphire Pendant", category: "Women · Necklaces", price: "₹2,75,000", numPrice: 275000, image: "https://images.unsplash.com/photo-1599459183200-59c3aede37f0?w=800&q=80" },
+        { id: 13, name: "Onyx Band Ring", category: "Men · Rings", price: "₹82,000", numPrice: 82000, image: "https://images.unsplash.com/photo-1609942072796-a1e1fae024cb?w=800&q=80" },
+        { id: 8, name: "Diamond Huggie Earrings", category: "Women · Earrings", price: "₹1,39,000", numPrice: 139000, image: "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80" },
+        { id: 16, name: "Black Diamond Studs", category: "Men · Earrings", price: "₹1,19,000", numPrice: 119000, image: "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?w=800&q=80" }
     ];
 
     const handleAddToCart = (e, product) => {

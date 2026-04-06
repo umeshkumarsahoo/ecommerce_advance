@@ -1,63 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-/**
- * ============================================================================
- * AuthContext - Manages authentication state for the luxury eCommerce app
- * ============================================================================
- * 
- * HARDCODED CREDENTIALS (Demo Only):
- * 
- * EXCLUSIVE MEMBER:
- *   - Username: "vip"
- *   - Password: "vip123"
- *   - Features: Exclusive member access, priority support, 20% discounts
- * 
- * STANDARD MEMBER:
- *   - Username: "user"
- *   - Password: "user123"
- *   - Features: Standard member, can upgrade to Exclusive
- * 
- * ============================================================================
- */
+// ---------------------------------------------------------------------------
+// Benefit Constants — Used for upgrade/downgrade display
+// ---------------------------------------------------------------------------
+const EXCLUSIVE_BENEFITS = [
+    'Free Express Shipping',
+    'Early Access to Collections',
+    'Exclusive Member Discount (20%)',
+    'Priority Customer Support',
+    'Complimentary Gift Wrapping',
+    'Exclusive VIP Events Access',
+];
 
-// ---------------------------------------------------------------------------
-// HARDCODED USER DATABASE
-// In a real app, this would come from a backend API
-// ---------------------------------------------------------------------------
-const USERS_DATABASE = {
-    vip: {
-        id: 1,
-        username: 'vip',
-        password: 'vip123',
-        name: 'Alexandra Sterling',
-        email: 'alexandra@lumiere.com',
-        memberSince: '2023',
-        isVIP: true,
-        membershipTier: 'Exclusive',
-        benefits: [
-            'Free Express Shipping',
-            'Early Access to Collections',
-            'Exclusive Member Discount (20%)',
-            'Priority Customer Support',
-            'Complimentary Gift Wrapping',
-            'Exclusive VIP Events Access'
-        ]
-    },
-    user: {
-        id: 2,
-        username: 'user',
-        password: 'user123',
-        name: 'Jordan Mitchell',
-        email: 'jordan@example.com',
-        memberSince: '2025',
-        isVIP: false,
-        membershipTier: 'Standard',
-        benefits: [
-            'Standard Shipping',
-            'Member-Only Promotions'
-        ]
-    }
-};
+const STANDARD_BENEFITS = [
+    'Standard Shipping',
+    'Member-Only Promotions',
+];
 
 // ---------------------------------------------------------------------------
 // Context Creation
@@ -66,7 +24,6 @@ const AuthContext = createContext(null);
 
 /**
  * Custom hook to access auth context
- * Throws error if used outside of AuthProvider
  */
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -80,31 +37,35 @@ export const useAuth = () => {
 // Auth Provider Component
 // ---------------------------------------------------------------------------
 export const AuthProvider = ({ children }) => {
-    // User state - null when not logged in
     const [user, setUser] = useState(null);
-
-    // Computed authentication status
     const isAuthenticated = user !== null;
 
-    // ---------------------------------------------------------------------------
-    // Session Persistence - Check for existing session on mount
-    // ---------------------------------------------------------------------------
+    // Session Persistence — Check for existing session on mount
     useEffect(() => {
         const savedUser = localStorage.getItem('luxuryUser');
         if (savedUser) {
             try {
                 const parsedUser = JSON.parse(savedUser);
-                setUser(parsedUser);
-            } catch (error) {
-                // Invalid JSON in localStorage - clear it
+                
+                // CRITICAL: Validate that the ID is a valid MongoDB ObjectId (24 hex chars)
+                // This prevents 500 errors from legacy IDs like "2" or "1"
+                const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(parsedUser.id);
+                
+                if (isValidObjectId) {
+                    setUser(parsedUser);
+                } else {
+                    console.warn("Legacy/Invalid User ID detected. Clearing session.");
+                    localStorage.removeItem('luxuryUser');
+                    setUser(null);
+                }
+            } catch {
                 localStorage.removeItem('luxuryUser');
             }
         }
     }, []);
 
     // ---------------------------------------------------------------------------
-    // LOGIN FUNCTION
-    // Validates credentials against the MongoDB backend API
+    // LOGIN — Validates credentials against the MongoDB backend API
     // ---------------------------------------------------------------------------
     const login = async (username, password) => {
         try {
@@ -117,24 +78,22 @@ export const AuthProvider = ({ children }) => {
             const data = await response.json();
 
             if (data.success) {
-                // Update state and persist to localStorage
                 setUser(data.user);
                 localStorage.setItem('luxuryUser', JSON.stringify(data.user));
                 return { success: true };
             } else {
                 return { success: false, error: data.message || 'Invalid email or password.' };
             }
-        } catch (error) {
+        } catch {
             return {
                 success: false,
-                error: 'Server connection failed. Please try again.'
+                error: 'Server connection failed. Please try again.',
             };
         }
     };
 
     // ---------------------------------------------------------------------------
-    // LOGOUT FUNCTION
-    // Clears auth state and removes session from localStorage
+    // LOGOUT — Clears auth state and removes session
     // ---------------------------------------------------------------------------
     const logout = () => {
         setUser(null);
@@ -142,57 +101,77 @@ export const AuthProvider = ({ children }) => {
     };
 
     // ---------------------------------------------------------------------------
-    // UPGRADE TO EXCLUSIVE FUNCTION
-    // Allows non-Exclusive users to upgrade their membership
+    // UPGRADE TO EXCLUSIVE — Persists to MongoDB
     // ---------------------------------------------------------------------------
-    const upgradeToExclusive = () => {
+    const upgradeToExclusive = async () => {
         if (!user) return { success: false, error: 'Must be logged in to upgrade' };
 
-        // Get Exclusive benefits from database
-        const exclusiveBenefits = USERS_DATABASE.vip.benefits;
+        try {
+            const response = await fetch('http://localhost:5001/api/auth/upgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id }),
+            });
+            const data = await response.json();
 
-        // Update user with Exclusive status
-        const upgradedUser = {
-            ...user,
-            isVIP: true,
-            membershipTier: 'Exclusive',
-            benefits: exclusiveBenefits
-        };
-
-        // Update state and persist
-        setUser(upgradedUser);
-        localStorage.setItem('luxuryUser', JSON.stringify(upgradedUser));
-
-        return { success: true };
+            if (data.success) {
+                setUser(data.user);
+                localStorage.setItem('luxuryUser', JSON.stringify(data.user));
+                return { success: true };
+            } else {
+                return { success: false, error: data.message };
+            }
+        } catch {
+            // Fallback: optimistic local update if server unreachable
+            const upgradedUser = {
+                ...user,
+                isVIP: true,
+                membershipTier: 'Exclusive',
+                benefits: EXCLUSIVE_BENEFITS,
+            };
+            setUser(upgradedUser);
+            localStorage.setItem('luxuryUser', JSON.stringify(upgradedUser));
+            return { success: true };
+        }
     };
 
     // ---------------------------------------------------------------------------
-    // DOWNGRADE FROM EXCLUSIVE FUNCTION
-    // Allows Exclusive users to cancel and return to Standard membership
+    // DOWNGRADE FROM EXCLUSIVE — Persists to MongoDB
     // ---------------------------------------------------------------------------
-    const downgradeFromExclusive = () => {
+    const downgradeFromExclusive = async () => {
         if (!user) return { success: false, error: 'Must be logged in to downgrade' };
 
-        // Get Standard benefits from database
-        const standardBenefits = USERS_DATABASE.user.benefits;
+        try {
+            const response = await fetch('http://localhost:5001/api/auth/downgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id }),
+            });
+            const data = await response.json();
 
-        // Revert user to Standard status
-        const downgradedUser = {
-            ...user,
-            isVIP: false,
-            membershipTier: 'Standard',
-            benefits: standardBenefits
-        };
-
-        // Update state and persist
-        setUser(downgradedUser);
-        localStorage.setItem('luxuryUser', JSON.stringify(downgradedUser));
-
-        return { success: true };
+            if (data.success) {
+                setUser(data.user);
+                localStorage.setItem('luxuryUser', JSON.stringify(data.user));
+                return { success: true };
+            } else {
+                return { success: false, error: data.message };
+            }
+        } catch {
+            // Fallback: optimistic local update if server unreachable
+            const downgradedUser = {
+                ...user,
+                isVIP: false,
+                membershipTier: 'Standard',
+                benefits: STANDARD_BENEFITS,
+            };
+            setUser(downgradedUser);
+            localStorage.setItem('luxuryUser', JSON.stringify(downgradedUser));
+            return { success: true };
+        }
     };
 
     // ---------------------------------------------------------------------------
-    // Context Value - All auth-related state and functions
+    // Context Value
     // ---------------------------------------------------------------------------
     const value = {
         user,
@@ -202,7 +181,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         upgradeToExclusive,
-        downgradeFromExclusive
+        downgradeFromExclusive,
     };
 
     return (

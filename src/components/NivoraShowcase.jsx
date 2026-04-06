@@ -23,28 +23,28 @@ const NivoraShowcase = () => {
 
     const products = [
         {
-            id: 1, productId: 1, name: "Diamond Solitaire", description: "Brilliant-cut 1.5ct diamond in 18K white gold. Eternal radiance.", image: img1
+            id: 1, productId: 1, name: "Diamond Solitaire", description: "Brilliant-cut 1.5ct diamond in 18K white gold. Eternal radiance.", image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80"
         },
         {
-            id: 2, productId: 6, name: "Ruby Halo", description: "Burmese ruby encircled by a constellation of diamonds.", image: img2
+            id: 2, productId: 6, name: "Ruby Halo", description: "Burmese ruby encircled by a constellation of diamonds.", image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=800&q=80"
         },
         {
-            id: 3, productId: 3, name: "Emerald Tennis", description: "8ct of Colombian emeralds channel-set in platinum.", image: img3
+            id: 3, productId: 3, name: "Emerald Tennis", description: "8ct of Colombian emeralds channel-set in platinum.", image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80"
         },
         {
-            id: 4, productId: 10, name: "Cuban Link", description: "Solid 18K gold chain. Bold presence, impeccable weight.", image: img4
+            id: 4, productId: 10, name: "Cuban Link", description: "Solid 18K gold chain. Bold presence, impeccable weight.", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&q=80"
         },
         {
-            id: 5, productId: 2, name: "Pearl Strand", description: "South Sea pearls hand-knotted on silk. Timeless grace.", image: img1
+            id: 5, productId: 2, name: "Pearl Strand", description: "South Sea pearls hand-knotted on silk. Timeless grace.", image: "https://images.unsplash.com/photo-1561919036-397982117e31?w=800&q=80"
         },
         {
-            id: 6, productId: 11, name: "Diamond Cufflinks", description: "Brilliant diamonds centred in brushed platinum.", image: img2
+            id: 6, productId: 11, name: "Diamond Cufflinks", description: "Brilliant diamonds centred in brushed platinum.", image: "https://images.unsplash.com/photo-1590548784585-643d2b9f2925?w=800&q=80"
         },
         {
-            id: 7, productId: 7, name: "Sapphire Pendant", description: "Ceylon sapphire on 18K white gold. Deep blue brilliance.", image: img3
+            id: 7, productId: 7, name: "Sapphire Pendant", description: "Ceylon sapphire on 18K white gold. Deep blue brilliance.", image: "https://images.unsplash.com/photo-1599459183200-59c3aede37f0?w=800&q=80"
         },
         {
-            id: 8, productId: 15, name: "Platinum ID", description: "Solid platinum curb-link bracelet. Quietly commanding.", image: img4
+            id: 8, productId: 15, name: "Platinum ID", description: "Solid platinum curb-link bracelet. Quietly commanding.", image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80"
         }
     ];
 
