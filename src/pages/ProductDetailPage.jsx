@@ -45,25 +45,15 @@ const CATEGORY_DETAILS = {
 
 const DEFAULT_DETAILS = CATEGORY_DETAILS.Rings;
 
-// Seed reviews per product (static, stored in-memory per session)
-const INITIAL_REVIEWS = {
-    1: [
-        { id: 1, name: 'Priya M.', rating: 5, text: 'Absolutely stunning ring. The diamond catches light beautifully. Worth every penny.', date: '2026-01-15' },
-        { id: 2, name: 'Ananya S.', rating: 4, text: 'Beautiful craftsmanship. Took a while to deliver but the quality is impeccable.', date: '2026-01-10' },
-    ],
-    9: [
-        { id: 1, name: 'Rahul K.', rating: 5, text: 'The signet ring is a masterpiece. Heavy gold, beautiful engraving. My new daily wear.', date: '2026-02-01' },
-    ],
-    2: [
-        { id: 1, name: 'Meera R.', rating: 5, text: 'These pearls are divine. The lustre is unmatched. Perfect gift for my mother.', date: '2026-01-20' },
-    ],
-};
+// Seed reviews removed — Now fetched from Database
+const INITIAL_REVIEWS = {};
+
 
 
 function ProductDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const { addToCart } = useCart();
     const { showToast } = useToast();
     const { toggleWishlist, isWishlisted } = useWishlist();
@@ -94,18 +84,35 @@ function ProductDetailPage() {
     }, [id]);
 
     // --- Review State ---
-    const [allReviews, setAllReviews] = useState(INITIAL_REVIEWS);
+    const [allReviews, setAllReviews] = useState([]);
     const [reviewRating, setReviewRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
-    const [reviewName, setReviewName] = useState('');
+    const [reviewName, setReviewName] = useState(user?.name || '');
 
-    const productReviews = allReviews[product?.id] || [];
+    // Fetch Reviews from Database
+    const fetchReviews = async () => {
+        try {
+            const res = await fetch(`http://localhost:5001/api/reviews/${id}`);
+            const data = await res.json();
+            if (data.success) {
+                setAllReviews(data.reviews);
+            }
+        } catch (err) {
+            console.error('Failed to fetch reviews:', err);
+        }
+    };
+
+    useEffect(() => {
+        if (id) fetchReviews();
+    }, [id]);
+
+    const productReviews = allReviews;
     const avgRating = productReviews.length > 0
         ? (productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length).toFixed(1)
         : product?.rating || 0;
 
-    // Reset state when product changes
+    // Synchronization: Reset local component state when the route parameter 'id' changes
     useEffect(() => {
         setSelectedImage(0);
         setSelectedSize(null);
@@ -113,9 +120,9 @@ function ProductDetailPage() {
         setOpenAccordion(null);
         setReviewRating(0);
         setReviewText('');
-        setReviewName('');
+        setReviewName(user?.name || '');
         window.scrollTo(0, 0);
-    }, [id]);
+    }, [id, user]);
 
     // --- Star Rating Display ---
     const renderStars = (rating) => {
@@ -128,7 +135,11 @@ function ProductDetailPage() {
         return stars;
     };
 
-    // --- Interactive Star Rating ---
+    /**
+     * StarSelector: Interactive Rating UI
+     * - hover state provides immediate visual feedback
+     * - select state persists the chosen rating
+     */
     const StarSelector = ({ value, hover, onSelect, onHover, onLeave }) => (
         <div style={{ display: 'flex', gap: '4px', cursor: 'pointer' }}>
             {[1, 2, 3, 4, 5].map((star) => (
@@ -169,9 +180,14 @@ function ProductDetailPage() {
         setTimeout(() => setAddedToCart(false), 2500);
     };
 
-    // --- Submit Review ---
-    const handleSubmitReview = (e) => {
+    // --- Submit Review to Backend ---
+    const handleSubmitReview = async (e) => {
         e.preventDefault();
+        
+        if (!isAuthenticated) {
+            showToast('Please login to post a review', 'error');
+            return;
+        }
         if (reviewRating === 0) {
             showToast('Please select a star rating', 'error');
             return;
@@ -180,24 +196,45 @@ function ProductDetailPage() {
             showToast('Please write your review', 'error');
             return;
         }
-        const newReview = {
-            id: Date.now(),
-            name: reviewName.trim() || 'Anonymous',
-            rating: reviewRating,
-            text: reviewText.trim(),
-            date: new Date().toISOString().split('T')[0],
-        };
-        setAllReviews((prev) => ({
-            ...prev,
-            [product.id]: [...(prev[product.id] || []), newReview],
-        }));
-        setReviewRating(0);
-        setReviewText('');
-        setReviewName('');
-        showToast('Thank you for your review!', 'success');
+
+        try {
+            const res = await fetch('http://localhost:5001/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productId: product.id,
+                    userId: user.id,
+                    userName: user.name,
+                    rating: reviewRating,
+                    text: reviewText.trim(),
+                }),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setReviewRating(0);
+                setReviewText('');
+                showToast('Thank you for your review!', 'success');
+                // Refresh reviews and product (to show new rating)
+                fetchReviews();
+                // Refresh product data to update the displayed rating
+                const prodRes = await fetch(`http://localhost:5001/api/products/${id}`);
+                const prodData = await prodRes.json();
+                if (prodData.success) {
+                    setProduct(prodData.product);
+                }
+            } else {
+                showToast(data.message || 'Failed to submit review', 'error');
+            }
+        } catch (error) {
+            showToast('Error connecting to server', 'error');
+        }
     };
 
-    // --- Accordion toggle ---
+    /**
+     * Accordion Logic: Ensures only one section is open at a time.
+     * Toggling the same key closes it.
+     */
     const toggleAccordion = (key) => {
         setOpenAccordion(openAccordion === key ? null : key);
     };
@@ -455,11 +492,11 @@ function ProductDetailPage() {
                     {productReviews.length > 0 ? (
                         <div style={s.reviewsList}>
                             {productReviews.map((review) => (
-                                <div key={review.id} style={s.reviewCard}>
+                                <div key={review._id || review.id} style={s.reviewCard}>
                                     <div style={s.reviewHeader}>
-                                        <div style={s.reviewAvatar}>{review.name.charAt(0).toUpperCase()}</div>
+                                        <div style={s.reviewAvatar}>{(review.userName || 'A').charAt(0).toUpperCase()}</div>
                                         <div>
-                                            <p style={s.reviewAuthor}>{review.name}</p>
+                                            <p style={s.reviewAuthor}>{review.userName}</p>
                                             <p style={s.reviewDate}>{review.date}</p>
                                         </div>
                                         <span style={s.reviewStars}>{renderStars(review.rating)}</span>
@@ -492,13 +529,18 @@ function ProductDetailPage() {
 
                             {/* Name */}
                             <div style={{ marginBottom: '1rem' }}>
-                                <label style={s.formLabel}>Your Name (optional)</label>
+                                <label style={s.formLabel}>Your Name</label>
                                 <input
                                     type="text"
-                                    value={reviewName}
+                                    value={isAuthenticated ? user.name : reviewName}
                                     onChange={(e) => setReviewName(e.target.value)}
-                                    placeholder="Enter your name"
-                                    style={s.formInput}
+                                    placeholder={isAuthenticated ? "" : "Enter your name"}
+                                    disabled={isAuthenticated}
+                                    style={{
+                                        ...s.formInput,
+                                        backgroundColor: isAuthenticated ? 'rgba(0,0,0,0.03)' : 'transparent',
+                                        cursor: isAuthenticated ? 'not-allowed' : 'text',
+                                    }}
                                 />
                             </div>
 

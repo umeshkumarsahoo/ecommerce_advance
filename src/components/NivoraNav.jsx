@@ -28,9 +28,13 @@ const NivoraNav = () => {
     const navigate = useNavigate();
     const dropdownRef = useRef(null);
 
-    // Handle scroll state
+    /**
+     * Navigation Lifecycle:
+     * 1. Scroll Detection: Updates 'scrolled' state for header transparency.
+     * 2. GSAP Entrance: Animates the nav bar on initial mount.
+     */
     useEffect(() => {
-        let ticking = false;
+        let ticking = false; // Throttling scroll events for performance
         const handleScroll = () => {
             if (!ticking) {
                 window.requestAnimationFrame(() => {
@@ -42,6 +46,7 @@ const NivoraNav = () => {
         };
         window.addEventListener('scroll', handleScroll, { passive: true });
 
+        // Initial entrance animation
         gsap.fromTo('.nivora-nav',
             { y: -30, opacity: 0 },
             { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.2 }
@@ -50,7 +55,7 @@ const NivoraNav = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Close dropdown when clicking outside
+    // Accessibility: Close user dropdown when clicking outside its bounds
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -61,7 +66,7 @@ const NivoraNav = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Keyboard shortcut: Cmd/Ctrl + K to open search
+    // Productive UX: Keyboard shortcut (Cmd/Ctrl + K) to trigger search overlay
     useEffect(() => {
         const handleKeyDown = (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -73,7 +78,10 @@ const NivoraNav = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    // Menu animation
+    /**
+     * Full-screen Menu Animation (Mobile & Desktop Overlay)
+     * Uses GSAP clipPath for a luxury "curtain" effect.
+     */
     useEffect(() => {
         if (menuOpen) {
             gsap.to('.nav-menu', {
@@ -94,7 +102,7 @@ const NivoraNav = () => {
         }
     }, [menuOpen]);
 
-    // Static menu items (no Dashboard/Login - those are in top right)
+    // Navigation configuration
     const menuItems = [
         { label: 'Home', path: '/' },
         { label: 'Collection', path: '/collections' },
@@ -114,7 +122,7 @@ const NivoraNav = () => {
         navigate('/dashboard');
     };
 
-    // Get first name for display
+    // Derived State: Display name for the top right account trigger
     const firstName = user?.name?.split(' ')[0] || 'User';
 
     return (

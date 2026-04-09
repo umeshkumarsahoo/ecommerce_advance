@@ -66,27 +66,35 @@ function PaymentPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // Coupon logic
+    // Coupon redemption logic: Appears as a flat discount on subtotal
     const applyCoupon = () => {
         const coupons = { LUXURY10: 10, MEMBER20: 20, VIP30: 30 };
-        if (coupons[couponCode.toUpperCase()]) {
-            const pct = coupons[couponCode.toUpperCase()];
+        const upperCode = couponCode.toUpperCase();
+        
+        if (coupons[upperCode]) {
+            const pct = coupons[upperCode];
+            // Rounding to nearest integer for clean currency display
             setDiscount(Math.round(cartSubtotal * (pct / 100)));
             setCouponApplied(true);
+            showToast(`Coupon applied: ${pct}% discount!`, 'success');
         } else {
             showToast('Invalid coupon code', 'error');
         }
     };
 
-    // Coin discount
+    /**
+     * Financial Calculations:
+     * 1. coinDiscount: Maximum possible discount from coins, capped by current order total
+     * 2. finalTotal: Final price after coupons and SuperCoin redemption
+     * 3. baseCoinsEarned: Users get 1 coin for every ₹100 spent
+     * 4. coinsEarned: VIPs get double coins (Accelerator)
+     */
     const coinDiscount = useCoins ? Math.min(superCoins, cartTotal - discount) : 0;
     const finalTotal = cartTotal - discount - coinDiscount;
-
-    // Coins the user will earn on this order
     const baseCoinsEarned = Math.floor(finalTotal / 100);
     const coinsEarned = isVIP ? baseCoinsEarned * 2 : baseCoinsEarned;
 
-    // Place order handler
+    // Order Submission Flow: Backend call -> Session Storage -> Redirection
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
         setIsProcessing(true);
@@ -107,9 +115,10 @@ function PaymentPage() {
                 shippingAddress: formData,
             };
 
+            // Call OrderContext to persist in MongoDB
             const newOrder = await placeOrder(orderData, coinDiscount);
 
-            // Store for confirmation page
+            // Temporarily store order summary to display on the Confirmation Page
             sessionStorage.setItem('becane_last_order', JSON.stringify({
                 ...newOrder,
                 coinsEarned: newOrder.coinsEarned,

@@ -2,13 +2,15 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/register — Create a new user account
-// ---------------------------------------------------------------------------
+/**
+ * POST /api/auth/register
+ * Register a new user with validation for email uniqueness and password strength.
+ */
 router.post('/register', async (req, res) => {
     try {
         const { name, email, mobile, password } = req.body;
 
+        // Basic presence validation
         if (!name || !email || !mobile || !password) {
             return res.status(400).json({
                 success: false,
@@ -16,6 +18,7 @@ router.post('/register', async (req, res) => {
             });
         }
 
+        // Check for existing account
         const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
             return res.status(400).json({
@@ -24,6 +27,7 @@ router.post('/register', async (req, res) => {
             });
         }
 
+        // Business Logic Validation: 10-digit mobile
         if (!/^[0-9]{10}$/.test(mobile)) {
             return res.status(400).json({
                 success: false,
@@ -31,6 +35,7 @@ router.post('/register', async (req, res) => {
             });
         }
 
+        // Password Security Policies
         if (password.length < 5) {
             return res.status(400).json({
                 success: false,
@@ -77,14 +82,15 @@ router.post('/register', async (req, res) => {
         console.error('Registration error:', error.message);
         res.status(500).json({
             success: false,
-            message: 'Server error. Please try again later.',
+            message: 'Server error during registration.',
         });
     }
 });
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/login — Authenticate an existing user
-// ---------------------------------------------------------------------------
+/**
+ * POST /api/auth/login
+ * Authenticate user credentials and return profile data.
+ */
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -130,14 +136,15 @@ router.post('/login', async (req, res) => {
         console.error('Login error:', error.message);
         res.status(500).json({
             success: false,
-            message: 'Server error. Please try again later.',
+            message: 'Server error during login.',
         });
     }
 });
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/upgrade — Upgrade user to Exclusive (VIP) membership
-// ---------------------------------------------------------------------------
+/**
+ * POST /api/auth/upgrade
+ * Promote user to VIP status with enhanced benefits.
+ */
 router.post('/upgrade', async (req, res) => {
     try {
         const { userId } = req.body;
@@ -184,9 +191,10 @@ router.post('/upgrade', async (req, res) => {
     }
 });
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/downgrade — Downgrade user to Standard membership
-// ---------------------------------------------------------------------------
+/**
+ * POST /api/auth/downgrade
+ * Revert user to Standard membership tier.
+ */
 router.post('/downgrade', async (req, res) => {
     try {
         const { userId } = req.body;
@@ -227,3 +235,4 @@ router.post('/downgrade', async (req, res) => {
 });
 
 module.exports = router;
+
