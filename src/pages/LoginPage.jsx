@@ -233,36 +233,7 @@ function LoginPage() {
                         </LuxuryButton>
                     </form>
 
-                    {/* Demo Credentials Hint - Shows both Exclusive and Standard options */}
-                    <div
-                        style={{
-                            marginTop: '1.5rem',
-                            padding: '1rem',
-                            background: 'rgba(79, 125, 181, 0.1)',
-                            border: '1px solid rgba(79, 125, 181, 0.2)',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            color: 'var(--accent)'
-                        }}
-                    >
-                        <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Demo Credentials:</strong>
 
-                        {/* Exclusive User */}
-                        <div style={{ marginBottom: '0.5rem' }}>
-                            <span style={{ color: 'var(--accent)' }}>★ Exclusive:</span>{' '}
-                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>vip</code>
-                            {' / '}
-                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>vip123</code>
-                        </div>
-
-                        {/* Standard User */}
-                        <div>
-                            <span style={{ color: 'var(--text-muted)' }}>● Standard:</span>{' '}
-                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>user</code>
-                            {' / '}
-                            <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '2px' }}>user123</code>
-                        </div>
-                    </div>
 
                     <div className="login-divider">
                         <span>or</span>

@@ -400,17 +400,23 @@ function CartPage() {
                             </div>
 
                             <div style={{ marginTop: '1.5rem' }}>
-                                <LuxuryButton
+                                <button
                                     onClick={() => navigate('/payment')}
                                     style={{
                                         width: '100%',
-                                        background: 'var(--color-accent)',
+                                        padding: '1rem',
+                                        background: '#000000',
                                         color: '#ffffff',
-                                        border: 'none'
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                        fontSize: '1rem',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em'
                                     }}
                                 >
                                     Proceed to Checkout
-                                </LuxuryButton>
+                                </button>
                             </div>
 
                             <p style={{

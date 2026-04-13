@@ -535,19 +535,25 @@ function PaymentPage() {
                                 </div>
 
                                 {/* Place Order */}
-                                <LuxuryButton
+                                <button
                                     type="submit"
                                     disabled={isProcessing}
                                     style={{
                                         width: '100%',
                                         marginTop: '1.5rem',
-                                        background: 'var(--color-accent)',
+                                        padding: '1rem',
+                                        background: '#000000',
                                         color: '#ffffff',
                                         border: 'none',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                        fontSize: '1rem',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em'
                                     }}
                                 >
                                     {isProcessing ? 'Placing Order...' : 'Place Order'}
-                                </LuxuryButton>
+                                </button>
 
                                 <p style={{
                                     fontSize: '0.7rem',
