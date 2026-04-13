@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-// import { PRODUCTS } from '../data/productData';
 
 /**
  * SearchOverlay — Full-viewport glassmorphism search
